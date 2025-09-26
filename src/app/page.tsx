@@ -4,14 +4,12 @@
 // import { api, HydrateClient } from "@/trpc/server";
 import { Button } from "@/components/ui/button";
 
-export default async function Home() {
-  
 
+export default async function Home() {
   return (
     <div>
-     <h1>Hiii</h1>
-     <Button>Click me</Button>
+      <h1>Welcome to the Home page</h1>
+      <Button onClick={() => console.log("Button clicked")}>Click me</Button>
     </div>
-    
   );
 }
