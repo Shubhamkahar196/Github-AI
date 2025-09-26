@@ -64,7 +64,7 @@ export function AppSidebar() {
 
   return (
     // changes variant = floating to sidebar
-    <Sidebar collapsible="icon" variant="sidebar">
+    <Sidebar collapsible="icon" variant="floating">
       <SidebarHeader>
         {/*logo  */}
         <div className="flex items-center gap-2">

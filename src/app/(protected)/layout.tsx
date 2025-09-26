@@ -12,21 +12,28 @@ interface Props {
 const SidebarLayout = ({ children }: Props) => {
   return (
     <SidebarProvider>
-      {/* App sidebar */}
-      <AppSidebar />
-      <main className="w-full m-2">
-        <div className="flex item-center gap-2 border-sidebar-border bg-sidebar border shadow rounded-md p-2 px-4">
-          {/* Search bar */}
-          <div className="ml-auto"></div>
-          <UserButton/>
-        </div>
-        <div className="h-4"></div>
-        {/* main content */}
-        <div className="border-sidebar-border bg-sidebar shadow  rounded-md overflow-y-scroll h-[calc(100vh-6rem)] p-4">
-          {children}
-        </div>
-      </main>
-    </SidebarProvider>
+        {/* appside bar */}
+
+        <AppSidebar/>
+
+        <main className="w-full m-2">
+
+          <div className="flex items-center justify-center gap-2 border-sidebar-border bg-sidebar border shadow rounded-md p-2 px-4 ">
+               {/* search bar */}
+
+               <div className="ml-auto"></div>
+               <UserButton/>
+          </div>
+
+          <div className="h-4"></div>
+          {/* maincontent */}
+
+             <div className="border-sidebar-border bg-sidebar border shadow rounded-md overflow-y-scroll h-[calc(100vh-6rem)] p-4">
+                 {children}
+             </div>
+
+        </main>
+    </SidebarProvider>    
   );
 };
 

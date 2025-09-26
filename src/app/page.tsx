@@ -9,7 +9,7 @@ export default async function Home() {
   return (
     <div>
       <h1>Welcome to the Home page</h1>
-      <Button onClick={() => console.log("Button clicked")}>Click me</Button>
+      <Button>Click me</Button>
     </div>
   );
 }
