@@ -5,6 +5,8 @@ import { useForm } from 'react-hook-form';
 import Image from "next/image";
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { api } from '@/trpc/react';
+import { toast } from 'sonner';
 
 type FormInput = {
     repoUrl: string
@@ -14,16 +16,33 @@ type FormInput = {
 
 const CreatePage = () => {
 
-    const {register, handleSubmit, reset} = useForm<FormInput>();
-   
+    const {register, handleSubmit,reset} = useForm<FormInput>();
+    const createProject = api.project.createProject.useMutation()
 
     function onSubmit(data: FormInput){
-        window.alert(JSON.stringify(data,null,2));
+        
+        createProject.mutate({
+            githubUrl: data.repoUrl,
+            name: data.projectName,
+            githubToken: data.githubToken
+        },{
+            onSuccess: ()=>{
+                toast.success('Project created Successfully')
+                reset()
+                
+            },
+            onError:() =>{
+                toast.error('Failed to create project')
+            }
+        })
         return true
     }
 
   return (
    <div className='flex items-center gap-12 h-full justify-center'>
+   
+        
+   
    <Image src="/project.jpg" alt="project" height={58} width={300} />
    {/* <img src="/project.jpg" alt="project" className='h-58 w-auto' /> */}
 
@@ -39,13 +58,13 @@ const CreatePage = () => {
          <Input {...register('repoUrl', {required:true})} placeholder='Project Name' />
 
          <div className="h-2"></div>
-          <Input {...register('repoUrl', {required:true})} placeholder='GitHub Url' type='url'/>
+          <Input {...register('projectName', {required:true})} placeholder='GitHub Url' type='url'/>
 
           <div className="h-2"></div>
-          <Input {...register('githubToken', {required:true})} placeholder='GitHub Token (Optional)' />
+          <Input {...register('githubToken')} placeholder='GitHub Token (Optional)' />
 
           <div className="h-4"></div>
-          <Button type='submit'>
+          <Button type='submit' disabled={createProject.isPending}>
             Create Project
           </Button>
         </form>

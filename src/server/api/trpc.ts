@@ -6,9 +6,10 @@
  * TL;DR - This is where all the tRPC server stuff is created and plugged in. The pieces you will
  * need to use are documented accordingly near the end.
  */
-import { initTRPC } from "@trpc/server";
+import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
 import { ZodError } from "zod";
+import { auth } from "@clerk/nextjs/server";
 
 import { db } from "@/server/db";
 
@@ -31,6 +32,8 @@ export const createTRPCContext = async (opts: { headers: Headers }) => {
   };
 };
 
+export type Context = Awaited<ReturnType<typeof createTRPCContext>> & { user: { userId: string } };
+
 /**
  * 2. INITIALIZATION
  *
@@ -38,7 +41,7 @@ export const createTRPCContext = async (opts: { headers: Headers }) => {
  * ZodErrors so that you get typesafety on the frontend if your procedure fails due to validation
  * errors on the backend.
  */
-const t = initTRPC.context<typeof createTRPCContext>().create({
+const t = initTRPC.context<Context>().create({
   transformer: superjson,
   errorFormatter({ shape, error }) {
     return {
@@ -79,6 +82,27 @@ export const createTRPCRouter = t.router;
  * You can remove this if you don't like it, but it can help catch unwanted waterfalls by simulating
  * network latency that would occur in production but not in local development.
  */
+
+// authentication
+
+const isAuthenticated = t.middleware(async ({next,ctx}) =>{
+  const user = await auth();
+
+  if(!user || !user.userId){
+     throw new TRPCError({
+      code: 'UNAUTHORIZED',
+      message: 'You must be logged in to access this resource'
+     })
+  }
+
+  return next({
+    ctx: {
+      ...ctx,
+      user: { userId: user.userId }
+    }
+  })
+})
+
 const timingMiddleware = t.middleware(async ({ next, path }) => {
   const start = Date.now();
 
@@ -104,3 +128,6 @@ const timingMiddleware = t.middleware(async ({ next, path }) => {
  * are logged in.
  */
 export const publicProcedure = t.procedure.use(timingMiddleware);
+// exporting authenticated
+
+export const protectedProcedure = t.procedure.use(isAuthenticated)
