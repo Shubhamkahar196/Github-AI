@@ -1,6 +1,7 @@
 
 import z from "zod";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
+// import { type Project } from "@prisma/client";
 
 
 
@@ -21,7 +22,6 @@ export const projectRouter = createTRPCRouter({
         
 
         
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         const project = await ctx.db.project.create({
             data:{
                 githubUrl: input.githubUrl,
@@ -33,7 +33,19 @@ export const projectRouter = createTRPCRouter({
                 }
             }
         })
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return project
+    }),
+    getProjects: protectedProcedure.query(async ({ctx}) =>{
+        return await ctx.db.project.findMany({
+            where: {
+                UserToProjects:{
+                    some:{
+                        userId: ctx.user.userId
+                    }
+                },
+                deletedAt: null
+            }
+        })
     })
+
 })

@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { api } from '@/trpc/react';
 import { toast } from 'sonner';
+import useRefetch from '@/hooks/use-refetch';
 
 type FormInput = {
     repoUrl: string
@@ -18,6 +19,7 @@ const CreatePage = () => {
 
     const {register, handleSubmit,reset} = useForm<FormInput>();
     const createProject = api.project.createProject.useMutation()
+    const refetch = useRefetch();
 
     function onSubmit(data: FormInput){
         
@@ -28,6 +30,7 @@ const CreatePage = () => {
         },{
             onSuccess: ()=>{
                 toast.success('Project created Successfully')
+                refetch();
                 reset()
                 
             },
@@ -55,10 +58,10 @@ const CreatePage = () => {
 
     <div>
         <form onSubmit={handleSubmit(onSubmit)}>
-         <Input {...register('repoUrl', {required:true})} placeholder='Project Name' />
+         <Input {...register('projectName', {required:true})} placeholder='Project Name' />
 
          <div className="h-2"></div>
-          <Input {...register('projectName', {required:true})} placeholder='GitHub Url' type='url'/>
+          <Input {...register('repoUrl', {required:true})} placeholder='GitHub Url' type='url'/>
 
           <div className="h-2"></div>
           <Input {...register('githubToken')} placeholder='GitHub Token (Optional)' />
