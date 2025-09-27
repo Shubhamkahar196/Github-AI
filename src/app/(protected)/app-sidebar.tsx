@@ -68,7 +68,7 @@ export function AppSidebar() {
       <SidebarHeader>
         {/*logo  */}
         <div className="flex items-center gap-2">
-          <Image src="/favicon.ico" alt="logo" width={40} height={40} />
+          <Image src="/logo-1.png" alt="logo" width={40} height={40} className="rounded-full " />
           {open && <h1 className="text-xl font-bold text-primary/80">GitHub AI</h1>}
         </div>
       </SidebarHeader>

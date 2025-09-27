@@ -11,7 +11,7 @@ import {
 export const metadata: Metadata = {
   title: "GitHub-AI",
   description: "AI powered GITHUB enhancement",
-  icons: [{ rel: "icon", url: "/favicon.ico" }],
+  icons: [{ rel: "icon", url: "/logo-2.png" }],
 };
 
 const geist = Geist({
