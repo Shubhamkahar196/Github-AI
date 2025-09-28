@@ -63,7 +63,7 @@ export const pollCommits = async (projectId: string) => {
   })
 
 
-  const commit = await db.commit.createMany({
+  const commits = await db.commit.createMany({
     data: summmarise.map((summary,index)=>{
       return {
         projectId: projectId,
@@ -72,12 +72,12 @@ export const pollCommits = async (projectId: string) => {
         commitAuthorName: unprocessedCommits[index]!.commitAuthorName,
         commitAuthorAvatar: unprocessedCommits[index]!.commitAuthorAvatar,
         commitDate: unprocessedCommits[index]!.commitDate,
-        summar!
+        summary
       }
     })
   })
 
-  return unprocessedCommits
+  return commits
 }
 
 async function fetchProjectGithubUrl(projectId: string) {
