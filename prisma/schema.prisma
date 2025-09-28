@@ -61,7 +61,7 @@ model UserToProject{
 
 
 model Commit {
- 
+
  id String @id @default(cuid())
  createdAt DateTime @default(now())
      updatedAt DateTime @updatedAt
@@ -71,6 +71,7 @@ model Commit {
      commitMessage String
      commitHash String
      commitAuthorName String
+     commitAuthorAvatar String?
      commitDate DateTime
     //  ai summary
 

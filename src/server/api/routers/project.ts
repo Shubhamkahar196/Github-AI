@@ -11,7 +11,14 @@ export const projectRouter = createTRPCRouter({
     createProject: protectedProcedure.input(
         z.object({
             name: z.string(),
-            githubUrl: z.string(),
+            githubUrl: z.string().url().refine((url) => {
+                try {
+                    const urlObj = new URL(url);
+                    return urlObj.hostname === 'github.com' && urlObj.pathname.split('/').filter(Boolean).length >= 2;
+                } catch {
+                    return false;
+                }
+            }, "Invalid GitHub URL. Must be a valid GitHub repository URL like https://github.com/owner/repo"),
             githubToken: z.string().optional()
         })
     ).mutation(async ({ctx,input})=>{
@@ -34,7 +41,11 @@ export const projectRouter = createTRPCRouter({
                 }
             }
         })
-        await pollCommits(project.id)
+        try {
+            await pollCommits(project.id)
+        } catch (error) {
+            console.error('Failed to poll commits:', error)
+        }
         return project
     }),
     getProjects: protectedProcedure.query(async ({ctx}) =>{
@@ -53,6 +64,7 @@ export const projectRouter = createTRPCRouter({
     getCommits: protectedProcedure.input(z.object({
         projectId: z.string()
     })).query(async ({ctx,input})=>{
+        pollCommits(input.projectId).then().catch(console.error)
         return await ctx.db.commit.findMany({where: {projectId: input.projectId}})
     })
 

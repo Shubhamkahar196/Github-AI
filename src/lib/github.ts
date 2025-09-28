@@ -55,7 +55,7 @@ export const pollCommits = async (projectId: string) => {
     return summariseCommit(githubUrl,commit.commitHash)
   }))
 
-  const summarise = summaryResponses.map((response)=>{
+  const summarise = summariseResponses.map((response)=>{
     if(response.status === 'fulfilled'){
       return response.value as string
     }
@@ -64,7 +64,7 @@ export const pollCommits = async (projectId: string) => {
 
 
   const commits = await db.commit.createMany({
-    data: summmarise.map((summary,index)=>{
+    data: summarise.map((summary,index)=>{
       return {
         projectId: projectId,
         commitHash: unprocessedCommits[index]!.commitHash,
