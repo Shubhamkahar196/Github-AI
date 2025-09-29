@@ -20,7 +20,7 @@ const AskQuestionCard = () => {
       const response = await askQuestion.mutateAsync({ projectId, question });
       setAnswer(response.answer);
     } catch (error) {
-      setAnswer("Error getting answer");
+      setAnswer("Error getting answer",error);
     }
   };
 

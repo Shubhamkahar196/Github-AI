@@ -34,6 +34,7 @@ model Project{
 
     name String
     githubUrl String
+    summary String? // Added to store AI-generated project summary from README
 
     deletedAt DateTime?
 

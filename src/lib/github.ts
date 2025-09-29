@@ -18,22 +18,32 @@ type Response = {
 export const getCommitHashes = async (githubUrl: string): Promise<Response[]> => {
  
   
-  const urlParts = githubUrl.split('/');
-if (urlParts.length < 5 || urlParts[2] !== 'github.com') {
-  throw new Error('Invalid GitHub URL format')
+//   const urlParts = githubUrl.split('/');
+// if (urlParts.length < 5 || urlParts[2] !== 'github.com') {
+//   throw new Error('Invalid GitHub URL format')
+// }
+// const owner = urlParts[3]
+// const repo = urlParts[4].split('.')[0]
+
+
+//   if (!owner || !repo) {
+//     throw new Error('Invalid GitHub URL: could not extract owner or repo')
+//   }
+
+//   const { data } = await octokit.rest.repos.listCommits({
+//     owner,
+//     repo
+//   })
+
+const [owner,repo] = githubUrl.split('/').slice(-2);
+if(!owner || !repo){
+  throw new Error("Invalid github url")
 }
-const owner = urlParts[3]
-const repo = urlParts[4].split('.')[0]
 
-
-  if (!owner || !repo) {
-    throw new Error('Invalid GitHub URL: could not extract owner or repo')
-  }
-
-  const { data } = await octokit.rest.repos.listCommits({
-    owner,
-    repo
-  })
+const {data} = await octokit.rest.repos.listCommits({
+  owner,
+  repo
+})
 
   const sortedCommits = data.sort((a, b) => {
     const aDate = a.commit.author?.date ? new Date(a.commit.author.date).getTime() : 0
@@ -55,11 +65,11 @@ export const pollCommits = async (projectId: string) => {
     const { project, githubUrl } = await fetchProjectGithubUrl(projectId)
     const commitHashes = await getCommitHashes(githubUrl)
     const unprocessedCommits = await filterUnprocessedCommits(projectId, commitHashes)
-    const summariseResponses = await Promise.allSettled(unprocessedCommits.map(commit =>{
-      return summariseCommit(githubUrl,commit.commitHash)
+    const summaryResponses = await Promise.allSettled(unprocessedCommits.map(commit =>{
+      return summariesCommit(githubUrl,commit.commitHash)
     }))
 
-    const summarise = summariseResponses.map((response)=>{
+    const summaries = summaryResponses.map((response)=>{
       if(response.status === 'fulfilled'){
         return response.value as string
       }
@@ -68,7 +78,7 @@ export const pollCommits = async (projectId: string) => {
 
 
     const commits = await db.commit.createMany({
-      data: summarise.map((summary,index)=>{
+      data: summaries.map((summary,index)=>{
         return {
           projectId: projectId,
           commitHash: unprocessedCommits[index]!.commitHash,
@@ -113,41 +123,72 @@ async function filterUnprocessedCommits(projectId: string, commitHashes: Respons
   return unprocessedCommits
 }
 
-async function summariseCommit(githubUrl: string,commitHash:string) {
+async function summariesCommit(githubUrl: string,commitHash:string) {
 //  get the difff. then pass the diff into ai
 
-  let normalizedUrl = githubUrl;
-  if (!githubUrl.startsWith('http')) {
-    normalizedUrl = `https://${githubUrl}`;
+const {data} = await axios.get(`${githubUrl}/commit/${commitHash}.diff`,{
+  headers: {
+    Accept: 'application/vnd.github.v3.diff'
   }
-  const urlParts = normalizedUrl.split('/');
-  if (urlParts.length < 4 || urlParts[3] !== 'github.com') {
-    return "";
-  }
-  const owner = urlParts[4];
-  const repo = urlParts[5];
+})
 
-  if (!owner || !repo) {
-    return "";
-  }
+return await aisummariseCommit(data) || ""
 
-  try {
-    const { data } = await octokit.rest.repos.getCommit({
-      owner,
-      repo,
-      ref: commitHash,
-      headers: {
-        accept: 'application/vnd.github.v3.diff'
-      }
-    });
-    return await aisummariseCommit(data) || "";
-  } catch (error) {
-    console.error('Error fetching commit diff:', error);
-    return "";
-  }
+  // let normalizedUrl = githubUrl;
+  // if (!githubUrl.startsWith('http')) {
+  //   normalizedUrl = `https://${githubUrl}`;
+  // }
+  // const urlParts = normalizedUrl.split('/');
+  // if (urlParts.length < 4 || urlParts[3] !== 'github.com') {
+  //   return "";
+  // }
+  // const owner = urlParts[4];
+  // const repo = urlParts[5];
+
+  // if (!owner || !repo) {
+  //   return "";
+  // }
+
+  // try {
+  //   const { data } = await octokit.rest.repos.getCommit({
+  //     owner,
+  //     repo,
+  //     ref: commitHash,
+  //     headers: {
+  //       accept: 'application/vnd.github.v3.diff'
+  //     }
+  //   });
+  //   return await aisummariseCommit(data) || "";
+  // } catch (error) {
+  //   console.error('Error fetching commit diff:', error);
+  //   return "";
+  // }
+
+
 }
 
 //  pollCommits(com)
+
+// Added function to fetch README content from GitHub for project summary generation
+export const getReadmeContent = async (githubUrl: string): Promise<string> => {
+  const [owner, repo] = githubUrl.split('/').slice(-2);
+  if (!owner || !repo) {
+    throw new Error("Invalid github url");
+  }
+
+  try {
+    const { data } = await octokit.rest.repos.getReadme({
+      owner,
+      repo,
+    });
+    // Decode base64 content
+    const content = Buffer.from(data.content, 'base64').toString('utf-8');
+    return content;
+  } catch (error) {
+    console.error('Error fetching README:', error);
+    return "";
+  }
+}
 
 
 

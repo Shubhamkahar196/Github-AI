@@ -7,7 +7,8 @@ const model = genAI.getGenerativeModel({
 })
 
 export const aisummariseCommit = async (diff: string) => {
-    const prompt = `You are an expert programmer, and you are trying to summarize a git diff.
+    const response = await model.generateContent([
+    ` You are an expert programmer, and you are trying to summarize a git diff.
 Remainders about the git diff format:
 For every file, there are a few metadata lines, like(for example):
 '''
@@ -35,11 +36,12 @@ Most commits will have less comments than this example list.
 The last commit does not include the file name,
 because there were more than two relevant files in the hypothetical commit.
 Do not include parts of the example in you summary.
-It is given ony as an example of appropriate comments.
+It is given ony as an example of appropriate comments.`,
 
-Please summarise the following diff file: \n\n${diff}`
+`Please summarise the following diff file: \n\n${diff}`,
+]);
 
-    const response = await model.generateContent(prompt)
+    // const response = await model.generateContent(prompt)
     return response.response.text()
 }
 

@@ -45,9 +45,17 @@ const Dashboard = () => {
 
       </div>
 
+      {/* Project Summary - Added to display AI-generated project summary from README */}
+      {project && 'summary' in project && project.summary && (
+        <div className="mt-4">
+          <h2 className="text-lg font-semibold mb-2">Project Summary</h2>
+          <p className="text-sm text-muted-foreground">{project.summary}</p>
+        </div>
+      )}
 
       <div className="mt-4">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-5">
+          {/* Ask question card */}
           <AskQuestionCard />
           MeetingCard
         </div>

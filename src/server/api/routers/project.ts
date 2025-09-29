@@ -1,7 +1,8 @@
 
 import z from "zod";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
-import { pollCommits } from "@/lib/github";
+import { pollCommits, getReadmeContent } from "@/lib/github"; // Added getReadmeContent import
+import { summariseText } from "@/lib/gemini"; // Added summariseText import for project summary
 // import { type Project } from "@prisma/client";
 
 
@@ -42,9 +43,18 @@ export const projectRouter = createTRPCRouter({
             }
         })
         try {
+            // Generate project summary from README
+            const readmeContent = await getReadmeContent(input.githubUrl);
+            if (readmeContent) {
+                const summary = await summariseText(readmeContent);
+                await ctx.db.project.update({
+                    where: { id: project.id },
+                    data: { summary }
+                });
+            }
             await pollCommits(project.id)
         } catch (error) {
-            console.error('Failed to poll commits:', error)
+            console.error('Failed to generate summary or poll commits:', error)
         }
         return project
     }),
@@ -74,20 +84,20 @@ export const projectRouter = createTRPCRouter({
         return await ctx.db.commit.findMany({where: {projectId: input.projectId}})
     }),
 
-    askQuestion: protectedProcedure.input(z.object({
-        projectId: z.string(),
-        question: z.string()
-    })).mutation(async ({ctx,input})=>{
-        if (!ctx.user.userId) {
-            throw new Error("User ID is required");
-        }
-        const commits = await ctx.db.commit.findMany({where: {projectId: input.projectId}})
-        const summaries = commits.map(commit => commit.summary).filter(Boolean)
-        const context = summaries.join('\n')
-        const { summariseText } = await import("@/lib/gemini")
-        const prompt = `Based on the following project commit summaries, answer the question: ${input.question}\n\nSummaries:\n${context}`
-        const answer = await summariseText(prompt)
-        return { answer }
-    })
+    // askQuestion: protectedProcedure.input(z.object({
+    //     projectId: z.string(),
+    //     question: z.string()
+    // })).mutation(async ({ctx,input})=>{
+    //     if (!ctx.user.userId) {
+    //         throw new Error("User ID is required");
+    //     }
+    //     const commits = await ctx.db.commit.findMany({where: {projectId: input.projectId}})
+    //     const summaries = commits.map(commit => commit.summary).filter(Boolean)
+    //     const context = summaries.join('\n')
+    //     const { summariseText } = await import("@/lib/gemini")
+    //     const prompt = `Based on the following project commit summaries, answer the question: ${input.question}\n\nSummaries:\n${context}`
+    //     const answer = await summariseText(prompt)
+    //     return { answer }
+    // })
 
 })
