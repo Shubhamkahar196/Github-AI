@@ -49,6 +49,9 @@ export const projectRouter = createTRPCRouter({
         return project
     }),
     getProjects: protectedProcedure.query(async ({ctx}) =>{
+        if (!ctx.user.userId) {
+            throw new Error("User ID is required");
+        }
         return await ctx.db.project.findMany({
             where: {
                 UserToProjects:{
@@ -64,8 +67,27 @@ export const projectRouter = createTRPCRouter({
     getCommits: protectedProcedure.input(z.object({
         projectId: z.string()
     })).query(async ({ctx,input})=>{
+        if (!ctx.user.userId) {
+            throw new Error("User ID is required");
+        }
         pollCommits(input.projectId).then().catch(console.error)
         return await ctx.db.commit.findMany({where: {projectId: input.projectId}})
+    }),
+
+    askQuestion: protectedProcedure.input(z.object({
+        projectId: z.string(),
+        question: z.string()
+    })).mutation(async ({ctx,input})=>{
+        if (!ctx.user.userId) {
+            throw new Error("User ID is required");
+        }
+        const commits = await ctx.db.commit.findMany({where: {projectId: input.projectId}})
+        const summaries = commits.map(commit => commit.summary).filter(Boolean)
+        const context = summaries.join('\n')
+        const { summariseText } = await import("@/lib/gemini")
+        const prompt = `Based on the following project commit summaries, answer the question: ${input.question}\n\nSummaries:\n${context}`
+        const answer = await summariseText(prompt)
+        return { answer }
     })
 
 })

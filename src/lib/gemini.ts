@@ -42,3 +42,9 @@ Please summarise the following diff file: \n\n${diff}`
     const response = await model.generateContent(prompt)
     return response.response.text()
 }
+
+export const summariseText = async (text: string) => {
+    const prompt = `Summarize the following text into a concise summary:\n\n${text}`
+    const response = await model.generateContent(prompt)
+    return response.response.text()
+}

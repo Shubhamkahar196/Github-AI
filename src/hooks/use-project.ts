@@ -1,11 +1,17 @@
 
 
+import React from "react"
 import { api } from '@/trpc/react'
 import {useLocalStorage} from 'usehooks-ts'
 
 const useProject = () => {
   const { data: projects } = api.project.getProjects.useQuery()
   const [projectId, setProjectId] = useLocalStorage<string | null>('Github-projectId', null)
+  React.useEffect(() => {
+    if (!projectId && projects && projects.length > 0) {
+      setProjectId(projects![0].id)
+    }
+  }, [projects, projectId, setProjectId])
   const project = projectId ? projects?.find((p) => p.id === projectId) : undefined
   return {
     projects,
