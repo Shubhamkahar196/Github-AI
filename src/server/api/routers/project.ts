@@ -1,8 +1,8 @@
 
 import z from "zod";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
-import { pollCommits, getReadmeContent } from "@/lib/github"; // Added getReadmeContent import
-import { summariseText } from "@/lib/gemini"; // Added summariseText import for project summary
+import { pollCommits } from "@/lib/github"; 
+
 // import { type Project } from "@prisma/client";
 
 
@@ -42,20 +42,9 @@ export const projectRouter = createTRPCRouter({
                 }
             }
         })
-        try {
-            // Generate project summary from README
-            const readmeContent = await getReadmeContent(input.githubUrl);
-            if (readmeContent) {
-                const summary = await summariseText(readmeContent);
-                await ctx.db.project.update({
-                    where: { id: project.id },
-                    data: { summary }
-                });
-            }
-            await pollCommits(project.id)
-        } catch (error) {
-            console.error('Failed to generate summary or poll commits:', error)
-        }
+        
+         await pollCommits(project.id)
+        
         return project
     }),
     getProjects: protectedProcedure.query(async ({ctx}) =>{

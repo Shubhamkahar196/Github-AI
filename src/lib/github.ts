@@ -77,19 +77,33 @@ export const pollCommits = async (projectId: string) => {
     })
 
 
-    const commits = await db.commit.createMany({
-      data: summaries.map((summary,index)=>{
-        return {
-          projectId: projectId,
-          commitHash: unprocessedCommits[index]!.commitHash,
-          commitMessage: unprocessedCommits[index]!.commitMessage,
-          commitAuthorName: unprocessedCommits[index]!.commitAuthorName,
-          commitAuthorAvatar: unprocessedCommits[index]!.commitAuthorAvatar,
-          commitDate: unprocessedCommits[index]!.commitDate,
-          summary
-        }
-      })
-    })
+    // const commits = await db.commit.createMany({
+    //   data: summaries.map((summary,index)=>{
+    //     return {
+    //       projectId: projectId,
+    //       commitHash: unprocessedCommits[index]!.commitHash,
+    //       commitMessage: unprocessedCommits[index]!.commitMessage,
+    //       commitAuthorName: unprocessedCommits[index]!.commitAuthorName,
+    //       commitAuthorAvatar: unprocessedCommits[index]!.commitAuthorAvatar,
+    //       commitDate: unprocessedCommits[index]!.commitDate,
+    //       summary
+          
+    //     }
+    //   })
+    // })
+
+
+const commits = await db.commit.createMany({
+  data: summaries.map((summary, index) => ({
+    projectId: projectId,
+    commitHash: unprocessedCommits[index]!.commitHash,
+    commitMessage: unprocessedCommits[index]!.commitMessage,
+    commitAuthorName: unprocessedCommits[index]!.commitAuthorName,
+    commitAuthorAvatar: unprocessedCommits[index]!.commitAuthorAvatar,
+    commitDate: unprocessedCommits[index]!.commitDate,
+    summary,
+  })),
+});
 
     return commits
   } catch (error) {
@@ -123,72 +137,35 @@ async function filterUnprocessedCommits(projectId: string, commitHashes: Respons
   return unprocessedCommits
 }
 
-async function summariesCommit(githubUrl: string,commitHash:string) {
-//  get the difff. then pass the diff into ai
+// async function summariesCommit(githubUrl: string,commitHash:string) {
+// //  get the difff. then pass the diff into ai
 
-const {data} = await axios.get(`${githubUrl}/commit/${commitHash}.diff`,{
-  headers: {
-    Accept: 'application/vnd.github.v3.diff'
+// const {data} = await axios.get(`${githubUrl}/commit/${commitHash}.diff`,{
+//   headers: {
+//     Accept: 'application/vnd.github.v3.diff'
+//   }
+// })
+
+// return await aisummariseCommit(data) || ""
+ 
+
+// }
+
+async function summariesCommit(githubUrl: string, commitHash: string) {
+  try {
+    const { data } = await axios.get(`${githubUrl}/commit/${commitHash}.diff`, {
+      headers: { Accept: 'application/vnd.github.v3.diff' },
+    });
+    return (await aisummariseCommit(data)) || '';
+  } catch (error) {
+    console.error(`Error summarizing commit ${commitHash}:`, error);
+    return '';
   }
-})
-
-return await aisummariseCommit(data) || ""
-
-  // let normalizedUrl = githubUrl;
-  // if (!githubUrl.startsWith('http')) {
-  //   normalizedUrl = `https://${githubUrl}`;
-  // }
-  // const urlParts = normalizedUrl.split('/');
-  // if (urlParts.length < 4 || urlParts[3] !== 'github.com') {
-  //   return "";
-  // }
-  // const owner = urlParts[4];
-  // const repo = urlParts[5];
-
-  // if (!owner || !repo) {
-  //   return "";
-  // }
-
-  // try {
-  //   const { data } = await octokit.rest.repos.getCommit({
-  //     owner,
-  //     repo,
-  //     ref: commitHash,
-  //     headers: {
-  //       accept: 'application/vnd.github.v3.diff'
-  //     }
-  //   });
-  //   return await aisummariseCommit(data) || "";
-  // } catch (error) {
-  //   console.error('Error fetching commit diff:', error);
-  //   return "";
-  // }
-
-
 }
 
 //  pollCommits(com)
 
-// Added function to fetch README content from GitHub for project summary generation
-export const getReadmeContent = async (githubUrl: string): Promise<string> => {
-  const [owner, repo] = githubUrl.split('/').slice(-2);
-  if (!owner || !repo) {
-    throw new Error("Invalid github url");
-  }
 
-  try {
-    const { data } = await octokit.rest.repos.getReadme({
-      owner,
-      repo,
-    });
-    // Decode base64 content
-    const content = Buffer.from(data.content, 'base64').toString('utf-8');
-    return content;
-  } catch (error) {
-    console.error('Error fetching README:', error);
-    return "";
-  }
-}
 
 
 
