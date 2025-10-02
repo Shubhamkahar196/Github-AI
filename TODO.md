@@ -1,6 +1,0 @@
-- [x] Add summary field to Project model in prisma/schema.prisma
-- [x] Run prisma generate to update client
-- [x] Add function to fetch README from GitHub in src/lib/github.ts
-- [x] Modify createProject in src/server/api/routers/project.ts to generate and save summary
-- [ ] Update dashboard page.tsx to display project summary
-- [ ] Test the changes

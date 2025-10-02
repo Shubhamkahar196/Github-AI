@@ -1,92 +1,66 @@
 
-// import z from "zod";
-// import { createTRPCRouter, protectedProcedure } from "../trpc";
-// import { pollCommits } from "@/lib/github"; 
-
-// // import { type Project } from "@prisma/client";
 
 
+
+// import { z } from 'zod'
+// import { createTRPCRouter, protectedProcedure } from '../trpc'
+// import { pollCommits } from '@/lib/github'
 
 // export const projectRouter = createTRPCRouter({
-      
-//     createProject: protectedProcedure.input(
-//         z.object({
-//             name: z.string(),
-//             githubUrl: z.string().url().refine((url) => {
-//                 try {
-//                     const urlObj = new URL(url);
-//                     return urlObj.hostname === 'github.com' && urlObj.pathname.split('/').filter(Boolean).length >= 2;
-//                 } catch {
-//                     return false;
-//                 }
-//             }, "Invalid GitHub URL. Must be a valid GitHub repository URL like https://github.com/owner/repo"),
-//             githubToken: z.string().optional()
-//         })
-//     ).mutation(async ({ctx,input})=>{
+//   createProject: protectedProcedure
+//     .input(z.object({
+//       name: z.string(),
+//       githubUrl: z.string().url().refine(url => {
+//         try {
+//           const u = new URL(url)
+//           return u.hostname === 'github.com' && u.pathname.split('/').filter(Boolean).length >= 2
+//         } catch {
+//           return false
+//         }
+//       }, 'Invalid GitHub URL'),
+//       githubToken: z.string().optional()
+//     }))
+//     .mutation(async ({ ctx, input }) => {
+//       if (!ctx.user.userId) throw new Error('User required')
 
-//           if (!ctx.user.userId) {
-//         throw new Error("User ID is required");
+//       const project = await ctx.db.project.create({
+//         data: {
+//           name: input.name,
+//           githubUrl: input.githubUrl,
+//           UserToProjects: {
+//             create: { userId: ctx.user.userId }
+//           }
+//         }
+//       })
+
+//       // trigger initial summary fetch
+//       await pollCommits(project.id)
+//       return project
+//     }),
+
+//   getProjects: protectedProcedure.query(async ({ ctx }) => {
+//     if (!ctx.user.userId) throw new Error('User required')
+//     return ctx.db.project.findMany({
+//       where: {
+//         UserToProjects: { some: { userId: ctx.user.userId } },
+//         deletedAt: null
 //       }
+//     })
+//   }),
 
-        
-//         const project = await ctx.db.project.create({
-//             data:{
-//                 githubUrl: input.githubUrl,
-//                 name: input.name,
-//                 UserToProjects:{
-//                     create: {
-//                         userId: ctx.user.userId,
-//                     }
-//                 }
-//             }
-//         })
-        
-//          await pollCommits(project.id)
-        
-//         return project
-//     }),
-//     getProjects: protectedProcedure.query(async ({ctx}) =>{
-//         if (!ctx.user.userId) {
-//             throw new Error("User ID is required");
-//         }
-//         return await ctx.db.project.findMany({
-//             where: {
-//                 UserToProjects:{
-//                     some:{
-//                         userId: ctx.user.userId
-//                     }
-//                 },
-//                 deletedAt: null
-//             }
-//         })
-//     }),
+//   getCommits: protectedProcedure
+//     .input(z.object({ projectId: z.string() }))
+//     .query(async ({ ctx, input }) => {
+//       if (!ctx.user.userId) throw new Error('User required')
 
-//     getCommits: protectedProcedure.input(z.object({
-//         projectId: z.string()
-//     })).query(async ({ctx,input})=>{
-//         if (!ctx.user.userId) {
-//             throw new Error("User ID is required");
-//         }
-//         await pollCommits(input.projectId)
-//         return await ctx.db.commit.findMany({where: {projectId: input.projectId}})
-//     }),
+//       // fetch new ones before returning
+//       await pollCommits(input.projectId)
 
-//     // askQuestion: protectedProcedure.input(z.object({
-//     //     projectId: z.string(),
-//     //     question: z.string()
-//     // })).mutation(async ({ctx,input})=>{
-//     //     if (!ctx.user.userId) {
-//     //         throw new Error("User ID is required");
-//     //     }
-//     //     const commits = await ctx.db.commit.findMany({where: {projectId: input.projectId}})
-//     //     const summaries = commits.map(commit => commit.summary).filter(Boolean)
-//     //     const context = summaries.join('\n')
-//     //     const { summariseText } = await import("@/lib/gemini")
-//     //     const prompt = `Based on the following project commit summaries, answer the question: ${input.question}\n\nSummaries:\n${context}`
-//     //     const answer = await summariseText(prompt)
-//     //     return { answer }
-//     // })
-
+//       const commits = await ctx.db.commit.findMany({
+//         where: { projectId: input.projectId }
+//       })
+//       return commits
+//     })
 // })
 
 
@@ -102,7 +76,10 @@ export const projectRouter = createTRPCRouter({
       githubUrl: z.string().url().refine(url => {
         try {
           const u = new URL(url)
-          return u.hostname === 'github.com' && u.pathname.split('/').filter(Boolean).length >= 2
+          return (
+            u.hostname === 'github.com' &&
+            u.pathname.split('/').filter(Boolean).length >= 2
+          )
         } catch {
           return false
         }
@@ -129,6 +106,7 @@ export const projectRouter = createTRPCRouter({
 
   getProjects: protectedProcedure.query(async ({ ctx }) => {
     if (!ctx.user.userId) throw new Error('User required')
+
     return ctx.db.project.findMany({
       where: {
         UserToProjects: { some: { userId: ctx.user.userId } },
@@ -142,12 +120,24 @@ export const projectRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       if (!ctx.user.userId) throw new Error('User required')
 
-      // fetch new ones before returning
+      // fetch new commits before returning
       await pollCommits(input.projectId)
 
-      const commits = await ctx.db.commit.findMany({
+      return ctx.db.commit.findMany({
         where: { projectId: input.projectId }
       })
-      return commits
+    }),
+
+  // ✅ new procedure: manual sync trigger
+  syncCommits: protectedProcedure
+    .input(z.object({ projectId: z.string() }))
+    .mutation(async ({ input }) => {
+      try {
+        await pollCommits(input.projectId)
+        return { success: true }
+      } catch (err) {
+        console.error('❌ Failed to sync commits:', err)
+        return { success: false }
+      }
     })
 })
