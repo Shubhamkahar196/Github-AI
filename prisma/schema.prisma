@@ -76,5 +76,5 @@ model Commit {
      commitDate DateTime
     //  ai summary
 
-    summary  String
+    summary  String?
 }

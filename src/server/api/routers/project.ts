@@ -29,8 +29,6 @@ export const projectRouter = createTRPCRouter({
       }
 
         
-
-        
         const project = await ctx.db.project.create({
             data:{
                 githubUrl: input.githubUrl,
@@ -69,7 +67,7 @@ export const projectRouter = createTRPCRouter({
         if (!ctx.user.userId) {
             throw new Error("User ID is required");
         }
-        pollCommits(input.projectId).then().catch(console.error)
+        await pollCommits(input.projectId)
         return await ctx.db.commit.findMany({where: {projectId: input.projectId}})
     }),
 

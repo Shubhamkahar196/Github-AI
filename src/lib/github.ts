@@ -1,7 +1,7 @@
 import { Octokit } from 'octokit'
 import { db } from '../server/db'
 import axios from 'axios'
-import { aisummariseCommit } from './gemini'
+import { aisummariesCommit } from './gemini'
 
 export const octokit = new Octokit({
   auth: process.env.GITHUB_TOKEN,
@@ -17,23 +17,7 @@ type Response = {
 
 export const getCommitHashes = async (githubUrl: string): Promise<Response[]> => {
  
-  
-//   const urlParts = githubUrl.split('/');
-// if (urlParts.length < 5 || urlParts[2] !== 'github.com') {
-//   throw new Error('Invalid GitHub URL format')
-// }
-// const owner = urlParts[3]
-// const repo = urlParts[4].split('.')[0]
 
-
-//   if (!owner || !repo) {
-//     throw new Error('Invalid GitHub URL: could not extract owner or repo')
-//   }
-
-//   const { data } = await octokit.rest.repos.listCommits({
-//     owner,
-//     repo
-//   })
 
 const [owner,repo] = githubUrl.split('/').slice(-2);
 if(!owner || !repo){
@@ -49,6 +33,7 @@ const {data} = await octokit.rest.repos.listCommits({
     const aDate = a.commit.author?.date ? new Date(a.commit.author.date).getTime() : 0
     const bDate = b.commit.author?.date ? new Date(b.commit.author.date).getTime() : 0
     return bDate - aDate
+    // new Date(b.commit.author.date).getTime()- new Date(a.commit.author.date).getTime() as any[]
   })
 
   return sortedCommits.slice(0, 15).map((commit) => ({
@@ -77,33 +62,20 @@ export const pollCommits = async (projectId: string) => {
     })
 
 
-    // const commits = await db.commit.createMany({
-    //   data: summaries.map((summary,index)=>{
-    //     return {
-    //       projectId: projectId,
-    //       commitHash: unprocessedCommits[index]!.commitHash,
-    //       commitMessage: unprocessedCommits[index]!.commitMessage,
-    //       commitAuthorName: unprocessedCommits[index]!.commitAuthorName,
-    //       commitAuthorAvatar: unprocessedCommits[index]!.commitAuthorAvatar,
-    //       commitDate: unprocessedCommits[index]!.commitDate,
-    //       summary
+    const commits = await db.commit.createMany({
+      data: summaries.map((summary,index)=>{
+        return {
+          projectId: projectId,
+          commitHash: unprocessedCommits[index]!.commitHash,
+          commitMessage: unprocessedCommits[index]!.commitMessage,
+          commitAuthorName: unprocessedCommits[index]!.commitAuthorName,
+          commitAuthorAvatar: unprocessedCommits[index]!.commitAuthorAvatar,
+          commitDate: unprocessedCommits[index]!.commitDate,
+          summary
           
-    //     }
-    //   })
-    // })
-
-
-const commits = await db.commit.createMany({
-  data: summaries.map((summary, index) => ({
-    projectId: projectId,
-    commitHash: unprocessedCommits[index]!.commitHash,
-    commitMessage: unprocessedCommits[index]!.commitMessage,
-    commitAuthorName: unprocessedCommits[index]!.commitAuthorName,
-    commitAuthorAvatar: unprocessedCommits[index]!.commitAuthorAvatar,
-    commitDate: unprocessedCommits[index]!.commitDate,
-    summary,
-  })),
-});
+        }
+      })
+    })
 
     return commits
   } catch (error) {
@@ -122,7 +94,8 @@ async function fetchProjectGithubUrl(projectId: string) {
   if (!project?.githubUrl) {
     throw new Error('Project has no github url')
   }
-  return { project, githubUrl: project.githubUrl }
+  // return { project, githubUrl: project.githubUrl }
+  return { project, githubUrl: project?.githubUrl }
 }
 
 async function filterUnprocessedCommits(projectId: string, commitHashes: Response[]) {
@@ -137,35 +110,17 @@ async function filterUnprocessedCommits(projectId: string, commitHashes: Respons
   return unprocessedCommits
 }
 
-// async function summariesCommit(githubUrl: string,commitHash:string) {
-// //  get the difff. then pass the diff into ai
+async function summariesCommit(githubUrl: string,commitHash:string) {
+//  get the difff. then pass the diff into ai
 
-// const {data} = await axios.get(`${githubUrl}/commit/${commitHash}.diff`,{
-//   headers: {
-//     Accept: 'application/vnd.github.v3.diff'
-//   }
-// })
+const {data} = await axios.get(`${githubUrl}/commit/${commitHash}.diff`,{
+  headers: {
+    Accept: 'application/vnd.github.v3.diff'
+  }
+})
 
-// return await aisummariseCommit(data) || ""
+return await aisummariesCommit(data) || ""
  
 
-// }
-
-async function summariesCommit(githubUrl: string, commitHash: string) {
-  try {
-    const { data } = await axios.get(`${githubUrl}/commit/${commitHash}.diff`, {
-      headers: { Accept: 'application/vnd.github.v3.diff' },
-    });
-    return (await aisummariseCommit(data)) || '';
-  } catch (error) {
-    console.error(`Error summarizing commit ${commitHash}:`, error);
-    return '';
-  }
 }
-
-//  pollCommits(com)
-
-
-
-
 
