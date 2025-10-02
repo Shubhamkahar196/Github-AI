@@ -48,17 +48,66 @@
 
 
 
+// import { GoogleGenerativeAI } from '@google/generative-ai'
+
+// // Set up the Gemini model with your API key
+// const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!)
+// const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' })
+
+// // Optional: Truncate large diffs to avoid token limits (Gemini Flash handles ~8,000 tokens well)
+// const MAX_DIFF_LENGTH = 12000 // Adjust if needed
+
+// // Main function to summarize Git diffs
+// export const aisummariesCommit = async (diff: string): Promise<string> => {
+//   try {
+//     const safeDiff = diff.length > MAX_DIFF_LENGTH ? diff.slice(0, MAX_DIFF_LENGTH) : diff
+
+//     const prompt = `
+// You are an expert programmer, and you are trying to summarize a git diff.
+
+// Reminders about the git diff format:
+// For every file, there are metadata lines like:
+// '''
+// diff --git a/lib/index.js b/lib/index.js
+// index aadf691..bfef603 100644
+// --- a/lib/index.js
+// +++ b/lib/index.js
+// '''
+// This means that 'lib/index.js' was modified. Lines starting with '+' were added, '-' were removed. Lines with neither are context.
+
+// Here are example summary comment styles (for inspiration only — do not copy them):
+// '''
+// * Raised the amount of returned recordings from '10' to '100' [packages/server/recordings_api.ts]
+// * Fixed a typo in the GitHub action name [.github/workflows/gpt-commit-summarizer.yml]
+// * Moved the 'octokit' initialization to a separate file [src/octokit.ts], [src/index.ts]
+// '''
+
+// Now, summarize the following git diff as a bullet list using '* ' at the beginning of each line:
+
+// ${safeDiff}
+//     `.trim()
+
+//     const response = await model.generateContent(prompt)
+//     const text = await response.response.text()
+
+//     return text.trim()
+//   } catch (error) {
+//     console.error('❌ Failed to generate summary:', error)
+//     return 'Summary generation failed.'
+//   }
+// }
+
+
+
+
 import { GoogleGenerativeAI } from '@google/generative-ai'
 
-// Set up the Gemini model with your API key
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!)
 const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' })
 
-// Optional: Truncate large diffs to avoid token limits (Gemini Flash handles ~8,000 tokens well)
-const MAX_DIFF_LENGTH = 12000 // Adjust if needed
+const MAX_DIFF_LENGTH = 12000
 
-// Main function to summarize Git diffs
-export const aisummariesCommit = async (diff: string): Promise<string> => {
+export async function aisummariesCommit(diff: string): Promise<string> {
   try {
     const safeDiff = diff.length > MAX_DIFF_LENGTH ? diff.slice(0, MAX_DIFF_LENGTH) : diff
 
@@ -93,6 +142,6 @@ ${safeDiff}
     return text.trim()
   } catch (error) {
     console.error('❌ Failed to generate summary:', error)
-    return 'Summary generation failed.'
+    return ''
   }
 }
