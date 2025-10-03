@@ -12,5 +12,3 @@ export const loadGithubRepo = async (githubUrl: string, githubToken?: string) =>
   const docs = await loader.load();
   return docs;
 }
-
-console.log(await loadGithubRepo('https://github.com/Shubhamkahar196/FinanceTracker'))
