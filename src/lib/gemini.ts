@@ -145,7 +145,7 @@ export async function summariesCode(doc: Document){
   console.log('getting summary for', doc.metadata.source);
   const code = doc.pageContent.slice(0,10000);  // limit to 10000 characters
   const response = await model.generateContent([
-    `you are an intelligent senior software engineer who specialises in onboarding junior software engineers onto projects`
+    `you are an intelligent senior software engineer who specialises in onboarding junior software engineers onto projects`,
     `You are onboarding a junior software engineer and explaining to them the purpose of the ${doc.onloadedmetadata.source} file
     Here is the code: 
     _ _ _
@@ -154,4 +154,13 @@ export async function summariesCode(doc: Document){
     Give a summary no more than 100 words of the code above `,
   ])
   return response.response.text();
+}
+
+export async function generateEmbedding(summary: string){
+  const model = genAI.getGenerativeModel({
+    model: "text-embedding-004"
+  })
+  const result = await model.embedContent(summary)
+  const embedding = result.embedding
+  return embedding.values
 }
