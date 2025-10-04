@@ -54,6 +54,7 @@
 
 // src/lib/gemini.ts
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { Document } from "@langchain/core/documents";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
@@ -136,4 +137,21 @@ Diff: ${c.diff ?? "No diff provided"}
     ...c,
     summary: "⚠️ Skipped due to quota",
   }));
+}
+
+
+
+export async function summariesCode(doc: Document){
+  console.log('getting summary for', doc.metadata.source);
+  const code = doc.pageContent.slice(0,10000);  // limit to 10000 characters
+  const response = await model.generateContent([
+    `you are an intelligent senior software engineer who specialises in onboarding junior software engineers onto projects`
+    `You are onboarding a junior software engineer and explaining to them the purpose of the ${doc.onloadedmetadata.source} file
+    Here is the code: 
+    _ _ _
+    &{code}
+    _ _ _
+    Give a summary no more than 100 words of the code above `,
+  ])
+  return response.response.text();
 }
