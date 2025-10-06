@@ -21,7 +21,6 @@ const AskQuestionCard = () => {
 
     <Dialog open={open} onOpenChange={setOpen}>
 
-       
         <DialogContent>
              <DialogHeader>
                 <DialogTitle>
