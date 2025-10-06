@@ -3,7 +3,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { DialogHeader } from '@/components/ui/dialog'
 import { Textarea } from '@/components/ui/textarea'
 import useProject from '@/hooks/use-project'
-import { Dialog, DialogContent, DialogTitle } from '@radix-ui/react-dialog'
+import {
+  Dialog,
+  DialogContent,
+
+  DialogTitle,
+} from "@/components/ui/dialog";
 import React, { useState } from 'react'
 import Image from "next/image";
 const AskQuestionCard = () => {
@@ -24,13 +29,16 @@ const AskQuestionCard = () => {
         <DialogContent>
              <DialogHeader>
                 <DialogTitle>
-                    <Image src="/logo-1.png" alt="project" height={58} width={300} />
+                    <Image src="/logo-1.png" alt="logo" width={40} height={40} className="rounded-full " />
                 </DialogTitle>
             </DialogHeader>
         </DialogContent>
     </Dialog>
+
+   
     
 <Card className='relative col-span-3'>
+
      <CardHeader>
         <CardTitle> Ask a Question</CardTitle>
      </CardHeader>
