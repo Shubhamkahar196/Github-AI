@@ -120,7 +120,7 @@ If the context doesn’t contain relevant information, say:
       });
 
       for await (const text of textStream) {
-        stream.update(text);
+        stream.update(delta);
       }
 
       stream.done();
