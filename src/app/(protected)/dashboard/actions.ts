@@ -37,14 +37,28 @@ export async function askQuestion(question: string, projectId: string) {
       console.error("❌ Database vector search error:", err)
     }
 
-    // Step 3: Build the AI prompt context
-    let context = ''
+    // Step 3: Fetch project summary
+    let projectSummary = ''
+    try {
+      const project = await db.project.findUnique({
+        where: { id: projectId },
+        select: { summary: true, name: true, githubUrl: true }
+      })
+      if (project) {
+        projectSummary = `Project Name: ${project.name}\nGitHub URL: ${project.githubUrl}\nProject Summary: ${project.summary || 'No summary available.'}\n\n`
+      }
+    } catch (err) {
+      console.error("Error fetching project:", err)
+    }
+
+    // Step 4: Build the AI prompt context
+    let context = projectSummary
     for (const doc of result) {
       context += `Source: ${doc.fileName}\nCode: ${doc.sourceCode}\nSummary: ${doc.summary}\n\n`
     }
 
-    if (result.length === 0) {
-      context = "No relevant code snippets were found in the database. Try answering generally based on project logic."
+    if (result.length === 0 && !projectSummary) {
+      context = "No relevant code snippets or project information were found in the database."
     }
 
     console.log("🧠 CONTEXT SENT TO GEMINI:\n", context.slice(0, 1000)) // debug preview
@@ -55,29 +69,27 @@ export async function askQuestion(question: string, projectId: string) {
         const { textStream } = await streamText({
           model: google('gemini-2.5-flash'), 
           prompt: `
-            You are a ai code assistant who answers question about the codebase. Your target audience is a technical intern 
-              AI assistant is a brand new, powerful, humal-like artificial intelligence.
-              The traits of AI include expert knowledge, helfulness, cleverness, and articulateness.
-              AI is a well- based and well-mannered individual.
-              AI is always friendly, kind, and inspiring, and he is eager to provide vivid and thoughtful response to the user.
-              AI has the sum of all knowledge in their brain, and is able to accurately answer nearly any question about any topic in if the question is asking about code or a specific file,
-              AI will provide the detailed answer, giving step by step instruction
-              START CONTEXT BLOCK
-              ${context}
-              END OF CONTEXT BLOCK
+            You are an AI code assistant who answers questions about the codebase. Your target audience is a technical intern.
+            You are a brand new, powerful, human-like artificial intelligence.
+            Your traits include expert knowledge, helpfulness, cleverness, and articulateness.
+            You are well-based and well-mannered.
+            You are always friendly, kind, and inspiring, and you provide vivid and thoughtful responses to the user.
+            You have access to general knowledge and can answer questions about programming languages, frameworks, and technologies based on common knowledge, especially when the project context provides clues like the project name or GitHub URL.
 
-              START QUESTION
-              ${question}
-              END OF QUESTION
+            START CONTEXT BLOCK
+            ${context}
+            END OF CONTEXT BLOCK
 
-              AI assistant will take into account any CONTEXT BLOCK that is provided in a conversation.
-              
-            
+            START QUESTION
+            ${question}
+            END OF QUESTION
 
-            If you context does not provide the answer to question , the AI assistant will say, "I"'m sorrry, but i don't know the answer
-          AI assistant will not apologize for previous respoonses, but instead will indicated new informtation
-          AI assistant will not invent anything that is not drawn directly from the context.
-          Answer in markdown SyntaxError, with code snippets if needed.Be as detailed as possible when answering
+            Take into account any CONTEXT BLOCK that is provided.
+            For questions about the project in general (like languages used, summary, etc.), use the project information in the context and your general knowledge to provide accurate answers.
+            For specific code questions, provide detailed answers with step-by-step instructions if possible.
+            If the context truly does not provide enough information and you cannot reasonably infer the answer, say "I'm sorry, but I don't have enough information to answer that question accurately."
+            Do not invent information not drawn from the context or general knowledge.
+            Answer in markdown format, with code snippets if needed. Be as detailed as possible when answering.
           `,
 
          
