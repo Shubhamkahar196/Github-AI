@@ -14,6 +14,7 @@ import {
 import React, { useState } from 'react'
 import Image from "next/image";
 import { askQuestion } from './actions'
+import { readStreamableValue } from '@ai-sdk/rsc'
 const AskQuestionCard = () => {
     const {project} = useProject()
     const [question, setQuestion] = useState('');
@@ -54,10 +55,15 @@ const AskQuestionCard = () => {
                 </DialogTitle>
             </DialogHeader>
 
- {answer}
-  {fileReferences.map(file=>{
-    return <span>{file.fileName}</span>
- })} 
+ <pre className="whitespace-pre-wrap">{answer}</pre>
+  <div className="mt-4">
+    <h4 className="font-semibold">Referenced Files:</h4>
+    <ul>
+      {fileReferences.map((file, index) => (
+        <li key={index}>{file.fileName}</li>
+      ))}
+    </ul>
+  </div>
 
         </DialogContent>
     </Dialog>
@@ -70,10 +76,10 @@ const AskQuestionCard = () => {
         <CardTitle> Ask a Question</CardTitle>
      </CardHeader>
      <CardContent>
-        <form>
+        <form onSubmit={onSubmit}>
             <Textarea placeholder='Which file should I edit to change the home page?' value={question} onChange={e => setQuestion(e.target.value)} />
             <div className='h-4'></div>
-            <Button type='submit'>Ask Github AI</Button>
+            <Button type='submit' disabled={loading}>Ask Github AI</Button>
         </form>
      </CardContent>
     </Card>  
