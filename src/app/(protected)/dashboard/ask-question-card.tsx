@@ -1,90 +1,47 @@
-// import { Button } from '@/components/ui/button'
-// import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-// import { DialogHeader } from '@/components/ui/dialog'
-// import { Textarea } from '@/components/ui/textarea'
-// import useProject from '@/hooks/use-project'
-// import {
-//   Dialog,
-//   DialogContent,
+"use client"
 
-//   DialogTitle,
-// } from "@/components/ui/dialog";
-// import React, { useState } from 'react'
-// import Image from "next/image";
-// import { askQuestion } from './actions'
-// const AskQuestionCard = () => {
-//     const {project} = useProject()
-//     const [question, setQuestion] = useState('');
-//      const [open, setOpen] = useState(false);
-//      const [loading, setLoading] = useState(false)
-//      const [fileReferences, setFileReferences] = useState<{fileName: string; sourceCode: string; summary: string}[]>([])
-//      const [answer, setAnswer] = useState('')
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { DialogHeader } from '@/components/ui/dialog'
+import { Textarea } from '@/components/ui/textarea'
+import useProject from '@/hooks/use-project'
+import {
+  Dialog,
+  DialogContent,
 
-
-//     const onSubmit = async(e:React.FormEvent<HTMLFormElement>) =>{
-//          e.preventDefault()
-//         if(!project?.id) return
-//        setLoading(true)
-//         setOpen(true)
-
-//         const {output,fileReferences } = await askQuestion(question, project.id)
-//         setFileReferences(fileReferences)
-        
-//         for await (const delta of readStreamableValue(output)){
-//             if(delta){
-//                 setAnswer(ans => ans + delta)
-//             }
-//         }
-//         setLoading(false)
-//     }
-
-
-
-import React, { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Textarea } from "@/components/ui/textarea";
+  DialogTitle,
+} from "@/components/ui/dialog";
+import React, { useState } from 'react'
 import Image from "next/image";
-import useProject from "@/hooks/use-project";
-import { readStreamableValue } from "ai/rsc";
-import { askQuestion } from "./actions";
-
+import { askQuestion } from './actions'
 const AskQuestionCard = () => {
-  const { project } = useProject();
-  const [question, setQuestion] = useState("");
-  const [open, setOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [fileReferences, setFileReferences] = useState<
-    { fileName: string; sourceCode: string; summary: string }[]
-  >([]);
-  const [answer, setAnswer] = useState("");
+    const {project} = useProject()
+    const [question, setQuestion] = useState('');
+     const [open, setOpen] = useState(false);
+     const [loading, setLoading] = useState(false)
+     const [fileReferences, setFileReferences] = useState<{fileName: string; sourceCode: string; summary: string}[]>([])
+     const [answer, setAnswer] = useState('')
 
-  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (!project?.id) return;
 
-    setLoading(true);
-    setOpen(true);
-    setAnswer("");
-    setFileReferences([]);
+    const onSubmit = async(e:React.FormEvent<HTMLFormElement>) =>{
+         e.preventDefault()
+        if(!project?.id) return
+       setLoading(true)
+        setOpen(true)
 
-    try {
-      const { output, fileReferences } = await askQuestion(question, project.id);
-      setFileReferences(fileReferences || []);
-
-      for await (const delta of readStreamableValue(output)) {
-        if (delta) {
-          setAnswer((ans) => ans + delta);
+        const {output,fileReferences } = await askQuestion(question, project.id)
+        setFileReferences(fileReferences)
+        
+        for await (const delta of readStreamableValue(output)){
+            if(delta){
+                setAnswer(ans => ans + delta)
+            }
         }
-      }
-    } catch (error) {
-      console.error("Error asking question:", error);
-      setAnswer("❌ Sorry, something went wrong while processing your question.");
-    } finally {
-      setLoading(false);
+        setLoading(false)
     }
-  };
+
+
+
   return (
     <>  
 
@@ -98,9 +55,9 @@ const AskQuestionCard = () => {
             </DialogHeader>
 
  {answer}
- {filesReferences.map(file=>{
+  {fileReferences.map(file=>{
     return <span>{file.fileName}</span>
- })}
+ })} 
 
         </DialogContent>
     </Dialog>
@@ -113,7 +70,7 @@ const AskQuestionCard = () => {
         <CardTitle> Ask a Question</CardTitle>
      </CardHeader>
      <CardContent>
-        <form onSubmit={onSubmit}>
+        <form>
             <Textarea placeholder='Which file should I edit to change the home page?' value={question} onChange={e => setQuestion(e.target.value)} />
             <div className='h-4'></div>
             <Button type='submit'>Ask Github AI</Button>
