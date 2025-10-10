@@ -141,5 +141,7 @@ export const projectRouter = createTRPCRouter({
         console.error('❌ Failed to sync commits:', err)
         return { success: false }
       }
-    })
+    }),
+
+
 })

@@ -1,7 +1,7 @@
 'use server'
 
 import { streamText } from 'ai'
-import { createStreamableValue } from '@ai-sdk/rsc' // ✅ correct import
+import { createStreamableValue } from '@ai-sdk/rsc' 
 import { createGoogleGenerativeAI } from '@ai-sdk/google'
 import { generateEmbedding } from '@/lib/gemini'
 import { db } from "@/server/db"
@@ -26,7 +26,7 @@ export async function askQuestion(question: string, projectId: string) {
         SELECT "fileName", "sourceCode", "summary",
         1 - ("summaryEmbedding" <=> ${vectorQuery}::vector) AS similarity
         FROM "SourceCodeEmbedding"
-        WHERE 1 - ("summaryEmbedding" <=> ${vectorQuery}::vector) > 0.3
+        WHERE 1 - ("summaryEmbedding" <=> ${vectorQuery}::vector) > 0.5
         AND "projectId" = ${projectId}
         ORDER BY similarity DESC
         LIMIT 10
