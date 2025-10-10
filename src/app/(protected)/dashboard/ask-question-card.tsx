@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { DialogHeader } from '@/components/ui/dialog'
 import { Textarea } from '@/components/ui/textarea'
 import useProject from '@/hooks/use-project'
+import MDEditor from '@uiw/react-md-editor';
 import {
   Dialog,
   DialogContent,
@@ -25,12 +26,17 @@ const AskQuestionCard = () => {
 
 
     const onSubmit = async(e:React.FormEvent<HTMLFormElement>) =>{
+      setAnswer('')
+      setFileReferences([])
          e.preventDefault()
         if(!project?.id) return
        setLoading(true)
         setOpen(true)
 
         const {output,fileReferences } = await askQuestion(question, project.id)
+        setOpen(true)
+
+
         setFileReferences(fileReferences)
         
         for await (const delta of readStreamableValue(output)){
@@ -48,22 +54,29 @@ const AskQuestionCard = () => {
 
     <Dialog open={open} onOpenChange={setOpen}>
 
-        <DialogContent>
+        <DialogContent className='sm:max-w-[80vw]'>
              <DialogHeader>
                 <DialogTitle>
                     <Image src="/logo-1.png" alt="logo" width={40} height={40} className="rounded-full " />
                 </DialogTitle>
             </DialogHeader>
 
- <pre className="whitespace-pre-wrap">{answer}</pre>
-  <div className="mt-4">
-    <h4 className="font-semibold">Referenced Files:</h4>
-    <ul>
+ {/* <pre className="whitespace-pre-wrap">{answer}</pre>
+  */}
+
+  <MDEditor.Markdown source={answer}  className=' max-w-[70vw] !h-full max-h-[40vh] overflow-scroll'/>
+       
+                   <Button type='button' onClick={()=> {setOpen(false); setAnswer('')}} >Close</Button>
+
+
+  {/* <div className="mt-4"> */}
+    {/* <h4 className="font-semibold">Referenced Files:</h4> */}
+    {/* <ul>
       {fileReferences.map((file, index) => (
         <li key={index}>{file.fileName}</li>
       ))}
-    </ul>
-  </div>
+    </ul> */}
+  {/* </div> */}
 
         </DialogContent>
     </Dialog>
