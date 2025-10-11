@@ -1,13 +1,14 @@
 'use server'
 
 import { streamText } from 'ai'
-import { createStreamableValue } from '@ai-sdk/rsc' 
+import { createStreamableValue } from '@ai-sdk/rsc'
 import { createGoogleGenerativeAI } from '@ai-sdk/google'
 import { generateEmbedding } from '@/lib/gemini'
 import { db } from "@/server/db"
+import { loadGithubRepo } from '@/lib/github-loader'
 
 const google = createGoogleGenerativeAI({
-  apiKey: process.env.GEMINI_API_KEY!,
+  apiKey: process.env.GEMINI_API_KEY ?? '',
 })
 
 export async function askQuestion(question: string, projectId: string) {
@@ -18,6 +19,18 @@ export async function askQuestion(question: string, projectId: string) {
     const queryVector = await generateEmbedding(question)
     const vectorQuery = `[${queryVector.join(',')}]`
 
+    // Step 1.5: Fetch project GitHub URL for fallback
+    let projectGithubUrl = ''
+    try {
+      const proj = await db.project.findUnique({
+        where: { id: projectId },
+        select: { githubUrl: true }
+      })
+      projectGithubUrl = proj?.githubUrl ?? ''
+    } catch (err) {
+      console.error("Error fetching project GitHub URL:", err)
+    }
+
     // Step 2: Find similar code snippets using vector search
     let result: { fileName: string; sourceCode: string; summary: string }[] = []
 
@@ -26,7 +39,7 @@ export async function askQuestion(question: string, projectId: string) {
         SELECT "fileName", "sourceCode", "summary",
         1 - ("summaryEmbedding" <=> ${vectorQuery}::vector) AS similarity
         FROM "SourceCodeEmbedding"
-        WHERE 1 - ("summaryEmbedding" <=> ${vectorQuery}::vector) > 0.5
+        WHERE 1 - ("summaryEmbedding" <=> ${vectorQuery}::vector) > .5
         AND "projectId" = ${projectId}
         ORDER BY similarity DESC
         LIMIT 10
@@ -37,6 +50,22 @@ export async function askQuestion(question: string, projectId: string) {
       console.error("❌ Database vector search error:", err)
     }
 
+    // Fallback: if no embedded files, load some files from GitHub
+    if (result.length === 0 && projectGithubUrl) {
+      try {
+        const docs = await loadGithubRepo(projectGithubUrl);
+        const limitedDocs = docs.slice(6, 10); // Limit to first 5 files
+        result = limitedDocs.map(doc => ({
+          fileName: doc.metadata.source || 'unknown',
+          sourceCode: doc.pageContent.slice(0, 10000),
+          summary: 'File content loaded from repository'
+        }));
+        console.log("📁 Loaded fallback files:", result.length);
+      } catch (err) {
+        console.error("❌ Error loading fallback files:", err);
+      }
+    }
+
     // Step 3: Fetch project summary
     let projectSummary = ''
     try {
@@ -45,7 +74,7 @@ export async function askQuestion(question: string, projectId: string) {
         select: { summary: true, name: true, githubUrl: true }
       })
       if (project) {
-        projectSummary = `Project Name: ${project.name}\nGitHub URL: ${project.githubUrl}\nProject Summary: ${project.summary || 'No summary available.'}\n\n`
+        projectSummary = `Project Name: ${project.name}\nGitHub URL: ${project.githubUrl}\nProject Summary: ${project.summary ?? 'No summary available.'}\n\n`
       }
     } catch (err) {
       console.error("Error fetching project:", err)
@@ -87,6 +116,7 @@ export async function askQuestion(question: string, projectId: string) {
             Take into account any CONTEXT BLOCK that is provided.
             For questions about the project in general (like languages used, summary, etc.), use the project information in the context and your general knowledge to provide accurate answers.
             For specific code questions, provide detailed answers with step-by-step instructions if possible.
+            When referencing specific code or files from the context, always include the file name in your response, e.g., "In file X.tsx, ..." or "As shown in Y.js, ...".
             If the context truly does not provide enough information and you cannot reasonably infer the answer, say "I'm sorry, but I don't have enough information to answer that question accurately."
             Do not invent information not drawn from the context or general knowledge.
             Answer in markdown format, with code snippets if needed. Be as detailed as possible when answering.
