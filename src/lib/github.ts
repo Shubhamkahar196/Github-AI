@@ -1,118 +1,6 @@
 
 
 
-
-
-
-
-// import { Octokit } from 'octokit'
-// import axios from 'axios'
-// import { aisummariesCommit } from './gemini'
-// import { db } from '../server/db'  // adjust import path
-
-// export const octokit = new Octokit({
-//   auth: process.env.GITHUB_TOKEN
-// })
-
-// type CommitBasic = {
-//   commitHash: string
-//   commitMessage: string
-//   commitAuthorName: string
-//   commitAuthorAvatar: string
-//   commitDate: string
-// }
-
-// // Fetch recent commits from GitHub
-// export async function getCommitHashes(githubUrl: string): Promise<CommitBasic[]> {
-//   const parts = githubUrl.split('/').slice(-2)
-//   const owner = parts[0]
-//   const repo = parts[1]
-//   if (!owner || !repo) {
-//     throw new Error('Invalid GitHub repo URL')
-//   }
-
-//   const { data } = await octokit.rest.repos.listCommits({
-//     owner,
-//     repo
-//   })
-
-//   // Sort by date descending
-//   const sorted = data.sort((a, b) => {
-//     const at = a.commit.author?.date ? new Date(a.commit.author.date).getTime() : 0
-//     const bt = b.commit.author?.date ? new Date(b.commit.author.date).getTime() : 0
-//     return bt - at
-//   })
-
-//   return sorted.slice(0, 15).map(c => ({
-//     commitHash: c.sha,
-//     commitMessage: c.commit.message || '',
-//     commitAuthorName: c.commit.author?.name || '',
-//     commitAuthorAvatar: c.author?.avatar_url || '',
-//     commitDate: c.commit.author?.date || ''
-//   }))
-// }
-
-// // Filter out commits already processed in DB
-// async function filterUnprocessedCommits(projectId: string, commits: CommitBasic[]) {
-//   const processed = await db.commit.findMany({
-//     where: { projectId },
-//     select: { commitHash: true }
-//   })
-//   const processedSet = new Set(processed.map(p => p.commitHash))
-//   return commits.filter(c => !processedSet.has(c.commitHash))
-// }
-
-// // Main: poll new commits, fetch diffs, generate summaries, save
-// export async function pollCommits(projectId: string) {
-//   try {
-//     const project = await db.project.findUnique({
-//       where: { id: projectId }
-//     })
-//     if (!project) {
-//       throw new Error('Project not found')
-//     }
-//     const githubUrl = project.githubUrl
-
-//     const commits = await getCommitHashes(githubUrl)
-//     const toProcess = await filterUnprocessedCommits(projectId, commits)
-
-//     const summaryPromises = toProcess.map(async c => {
-//       // fetch diff for this commit
-//       const diffResp = await axios.get(`${githubUrl}/commit/${c.commitHash}.diff`, {
-//         headers: {
-//           Accept: 'application/vnd.github.v3.diff'
-//         }
-//       })
-//       const diff = diffResp.data
-//       const summary = await aisummariesCommit(diff)
-//       return { commit: c, summary }
-//     })
-
-//     const results = await Promise.all(summaryPromises)
-
-//     const createData = results.map(r => ({
-//       projectId: projectId,
-//       commitHash: r.commit.commitHash,
-//       commitMessage: r.commit.commitMessage,
-//       commitAuthorName: r.commit.commitAuthorName,
-//       commitAuthorAvatar: r.commit.commitAuthorAvatar,
-//       commitDate: r.commit.commitDate,
-//       summary: r.summary || null
-//     }))
-
-//     const created = await db.commit.createMany({
-//       data: createData
-//     })
-
-//     console.log('✅ Created commit summaries:', createData)
-//     return created
-//   } catch (err) {
-//     console.error('❌ Error in pollCommits:', err)
-//     return { count: 0 }
-//   }
-// }
-
-
 import { Octokit } from "octokit";
 import axios from "axios";
 import { aisummarizeCommits} from "./gemini"; 
@@ -237,3 +125,121 @@ export async function pollCommits(projectId: string) {
     return { count: 0 };
   }
 }
+
+
+
+
+// import { Octokit } from "octokit";
+// import { db } from "@/server/db";
+// import { generateEmbedding, summariesCode } from "@/lib/gemini";
+
+// if (!process.env.GITHUB_TOKEN) {
+//   throw new Error("❌ GITHUB_TOKEN is missing in environment variables.");
+// }
+
+// // Reusable Octokit instance
+// const defaultOctokit = new Octokit({
+//   auth: process.env.GITHUB_TOKEN,
+// });
+
+// // Utility to get Octokit instance (handles optional user token)
+// function getOctokit(githubToken?: string) {
+//   return new Octokit({
+//     auth: githubToken || process.env.GITHUB_TOKEN,
+//   });
+// }
+
+// export async function indexGithubRepo(
+//   projectId: string,
+//   githubUrl: string,
+//   githubToken?: string
+// ) {
+//   try {
+//     console.log("🚀 Indexing repository:", githubUrl);
+
+//     // Extract repo owner and name
+//     const parts = githubUrl.split("/").slice(-2);
+//     const owner = parts[0];
+//     const repo = parts[1];
+//     if (!owner || !repo) throw new Error("Invalid GitHub repository URL.");
+
+//     const octokit = getOctokit(githubToken);
+
+//     // Fetch repo tree (recursive = true)
+//     const { data: tree } = await octokit.rest.git.getTree({
+//       owner,
+//       repo,
+//       tree_sha: "main",
+//       recursive: "true",
+//     });
+
+//     // Filter code files only
+//     const codeFiles = tree.tree.filter(
+//       (f: any) =>
+//         f.type === "blob" &&
+//         /\.(js|jsx|ts|tsx|java|py|cs|cpp|html|css|json)$/.test(f.path)
+//     );
+
+//     console.log(`📦 Found ${codeFiles.length} code files to index`);
+
+//     for (const file of codeFiles) {
+//       try {
+//         const { data: fileContent } = await octokit.rest.repos.getContent({
+//           owner,
+//           repo,
+//           path: file.path,
+//         });
+
+//         const content = Buffer.from(
+//           (fileContent as any).content,
+//           "base64"
+//         ).toString("utf8");
+
+//         // Skip large files
+//         if (content.length > 20000) {
+//           console.log(`⚠️ Skipping large file: ${file.path}`);
+//           continue;
+//         }
+
+//         // Summarize the file content using Gemini
+//         const summary = await summariesCode({
+//           pageContent: content,
+//           metadata: { source: file.path },
+//         });
+
+//         // Generate embedding vector for similarity search
+//         const embedding = await generateEmbedding(summary);
+
+//         // Save into the database
+//         await db.sourceCodeEmbedding.upsert({
+//           where: {
+//             projectId_fileName: {
+//               projectId,
+//               fileName: file.path,
+//             },
+//           },
+//           update: {
+//             sourceCode: content,
+//             summary,
+//             summaryEmbedding: embedding,
+//           },
+//           create: {
+//             projectId,
+//             fileName: file.path,
+//             sourceCode: content,
+//             summary,
+//             summaryEmbedding: embedding,
+//           },
+//         });
+
+//         console.log(`✅ Indexed ${file.path}`);
+//       } catch (err) {
+//         console.warn(`⚠️ Failed to index file ${file.path}:`, err);
+//       }
+//     }
+
+//     console.log("🎯 Repository indexing complete:", githubUrl);
+//   } catch (err) {
+//     console.error("❌ Error during repository indexing:", err);
+//   }
+// }
