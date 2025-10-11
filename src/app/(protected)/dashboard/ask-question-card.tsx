@@ -14,6 +14,8 @@ import { readStreamableValue } from "@ai-sdk/rsc";
 import CodeReferences from "./code-references";
 import { api } from "@/trpc/react";
 import { toast } from "sonner";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ScrollArea } from "@/components/ui/scroll-area";
 const AskQuestionCard = () => {
   const { project } = useProject();
   const [question, setQuestion] = useState("");
@@ -51,6 +53,7 @@ const AskQuestionCard = () => {
 
   return (
     <>
+      {/* // Old dialog content commented out
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-[80vw]">
           <DialogHeader>
@@ -85,9 +88,6 @@ const AskQuestionCard = () => {
             </div>
           </DialogHeader>
 
-          {/* <pre className="whitespace-pre-wrap">{answer}</pre>
-           */}
-
           <MDEditor.Markdown
             source={answer}
             className="!h-full max-h-[40vh] max-w-[70vw] overflow-scroll"
@@ -104,15 +104,85 @@ const AskQuestionCard = () => {
           >
             Close
           </Button>
+        </DialogContent>
+      </Dialog>
+      */}
 
-          {/* <div className="mt-4"> */}
-          {/* <h4 className="font-semibold">Referenced Files:</h4> */}
-          {/* <ul>
-      {fileReferences.map((file, index) => (
-        <li key={index}>{file.fileName}</li>
-      ))}
-    </ul> */}
-          {/* </div> */}
+      {/* // New improved UI with tabs for answer and file references */}
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="max-w-[90vw] max-h-[90vh] flex flex-col sm:max-w-[80vw]">
+          <DialogHeader>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Image
+                  src="/logo-1.png"
+                  alt="logo"
+                  width={40}
+                  height={40}
+                  className="rounded-full"
+                />
+                <DialogTitle className="text-lg font-semibold">GitHub AI Answer</DialogTitle>
+              </div>
+              <Button
+                disabled={saveAnswer.isPending}
+                variant="outline"
+                onClick={() => {
+                  saveAnswer.mutate(
+                    {
+                      projectId: project!.id,
+                      question,
+                      answer,
+                      fileReferences,
+                    },
+                    {
+                      onSuccess: () => {
+                        toast.success("Answer saved!");
+                      },
+                      onError: () => {
+                        toast.error("Failed to save answer!");
+                      },
+                    }
+                  );
+                }}
+                className="mr-5"
+              >
+                Save Answer
+              </Button>
+            </div>
+          </DialogHeader>
+
+          <Tabs defaultValue="answer" className="flex-1 flex flex-col">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="answer">AI Answer</TabsTrigger>
+              <TabsTrigger value="references">File References ({fileReferences.length})</TabsTrigger>
+            </TabsList>
+            <TabsContent value="answer" className="flex-1 mt-4">
+              <ScrollArea className="h-[60vh] w-full rounded-md border p-4">
+                <MDEditor.Markdown
+                  source={answer}
+                  className="!bg-transparent !text-foreground"
+                />
+              </ScrollArea>
+            </TabsContent>
+            <TabsContent value="references" className="flex-1 mt-4">
+              <ScrollArea className="h-[60vh] w-full rounded-md border p-4">
+                <CodeReferences fileReferences={fileReferences} />
+              </ScrollArea>
+            </TabsContent>
+          </Tabs>
+
+          <div className="flex justify-end mt-4">
+            <Button
+              type="button"
+              onClick={() => {
+                setOpen(false);
+                setAnswer("");
+                setFileReferences([]);
+              }}
+            >
+              Close
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
 
