@@ -16,6 +16,7 @@ import { api } from "@/trpc/react";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import useRefetch from "@/hooks/use-refetch";
 const AskQuestionCard = () => {
   const { project } = useProject();
   const [question, setQuestion] = useState("");
@@ -50,6 +51,9 @@ const AskQuestionCard = () => {
     }
     setLoading(false);
   };
+
+  const refetch = useRefetch()
+
 
   return (
     <>
@@ -137,6 +141,7 @@ const AskQuestionCard = () => {
                     {
                       onSuccess: () => {
                         toast.success("Answer saved!");
+                       refetch() 
                       },
                       onError: () => {
                         toast.error("Failed to save answer!");
