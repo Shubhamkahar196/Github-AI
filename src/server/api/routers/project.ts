@@ -104,10 +104,18 @@ export const projectRouter = createTRPCRouter({
           status: "PROCESSING"
         }
       })
-    })
+    }),
 
     getMeetings: protectedProcedure.input(z.object({projectId: z.string()})).query(async ({ctx,input})=>{
-      return await ctx.db.meeting.findMany({ where: {projectId: input.projectId}})
+      return await ctx.db.meeting.findMany({ where: {projectId: input.projectId}, include: {issues: true}})
     })
+
+
+
+
+
+
+
+
 })
 
