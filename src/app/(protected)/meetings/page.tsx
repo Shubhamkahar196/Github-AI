@@ -4,15 +4,17 @@ import useProject from '@/hooks/use-project'
 import { api } from '@/trpc/react'
 import React from 'react'
 import MeetingCard from '../dashboard/meeting-card'
-import { Link } from 'lucide-react'
+import Link from 'next/link'
+
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 
 const MeetingPage = () => {
     const {projectId} = useProject()
-    const {data: meeting, isLoading} = api.project.getMeetings.useQuery({projectId},{
-        refetchInterval: 4000
-    })
+    const {data: meetings, isLoading} = api.project.getMeetings.useQuery(
+      { projectId: projectId! },
+      { enabled: !!projectId, refetchInterval: 4000 }
+    )
   return (
     <>
       
