@@ -2,6 +2,7 @@ import { processMeeting } from "@/lib/assembly";
 import { auth } from "@clerk/nextjs/server";
 import { AwardIcon } from "lucide-react";
 import { NextResponse, type NextRequest } from "next/server";
+import { db } from "@/server/db";
 
 
 import {z} from 'zod'

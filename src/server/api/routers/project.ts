@@ -6,6 +6,7 @@ import { z } from 'zod'
 import { createTRPCRouter, protectedProcedure } from '../trpc'
 
 import {pollCommits} from '@/lib/github'
+import { db } from '@/server/db'
 
 export const projectRouter = createTRPCRouter({
   createProject: protectedProcedure
@@ -114,6 +115,15 @@ export const projectRouter = createTRPCRouter({
 
     deleteMeeting: protectedProcedure.input(z.object({meetingId: z.string()})).mutation(async ({ctx,input})=>{
       return await ctx.db.meeting.delete({where:{id: input.meetingId}})
+    }),
+
+    getMeetingId: protectedProcedure.input(z.object({meetingId: z.string()})).query(async({ctx,input})=>{
+      return await ctx.db.meeting.findUnique({
+        where: {
+          id: input.meetingId
+        },
+        include: {issues: true}
+      })
     })
 
 
