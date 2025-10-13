@@ -16,7 +16,7 @@ const ArchiveButton = () =>{
     return (
         <Button disabled={archiveProject.isPending} variant='destructive' onClick={()=>{
             const confirm = window.confirm("are you sure you want to archive this project")
-            if(confirm) archiveProject.mutate({projectId: projectId},{
+            if(confirm) void archiveProject.mutate({projectId: projectId!},{
                 onSuccess: () =>{
                     toast.success("project archived")
                     refetch()
