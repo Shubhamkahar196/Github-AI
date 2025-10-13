@@ -36,7 +36,7 @@ import useProject from "@/hooks/use-project";
     },
     {
       title: "Meeting",
-      url: "/meeting",
+      url: "/meetings",
       icon: Presentation,
     },
     {

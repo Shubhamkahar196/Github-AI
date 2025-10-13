@@ -8,7 +8,7 @@ type Props = {
     params: Promise<{meetingId: string}>
 }
 
-const MeetingDetailsPage = ({params}) => {
+const MeetingDetailsPage = async ({params}: Props) => {
     const {meetingId} = await params
   return (
    <IssueList  meetingId={meetingId} />

@@ -6,7 +6,7 @@ import { z } from 'zod'
 import { createTRPCRouter, protectedProcedure } from '../trpc'
 
 import {pollCommits} from '@/lib/github'
-import { db } from '@/server/db'
+
 
 export const projectRouter = createTRPCRouter({
   createProject: protectedProcedure
