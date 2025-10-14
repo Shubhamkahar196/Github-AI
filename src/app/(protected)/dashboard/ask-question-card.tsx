@@ -57,62 +57,7 @@ const AskQuestionCard = () => {
 
   return (
     <>
-      {/* // Old dialog content commented out
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="sm:max-w-[80vw]">
-          <DialogHeader>
-            <div className="flex items-center gap-2">
-              <DialogTitle>
-                <Image
-                  src="/logo-1.png"
-                  alt="logo"
-                  width={40}
-                  height={40}
-                  className="rounded-full"
-                />
-              </DialogTitle>
-
-              <Button  disabled={saveAnswer.isPending} variant={'outline'} onClick={() => {
-                saveAnswer.mutate({
-                  projectId: project!.id,
-                  question,
-                  answer,
-                  fileReferences
-                },{
-                  onSuccess: () =>{
-                    toast.success('Answer saved!')
-                  },
-                  onError: () =>{
-                    toast.error('Failed to save answer!')
-                  }
-                })
-              }}>
-                Save Answer
-              </Button>
-            </div>
-          </DialogHeader>
-
-          <MDEditor.Markdown
-            source={answer}
-            className="!h-full max-h-[40vh] max-w-[70vw] overflow-scroll"
-          />
-          <div className="h-4"></div>
-          <CodeReferences fileReferences={fileReferences} />
-
-          <Button
-            type="button"
-            onClick={() => {
-              setOpen(false);
-              setAnswer("");
-            }}
-          >
-            Close
-          </Button>
-        </DialogContent>
-      </Dialog>
-      */}
-
-      {/* // New improved UI with tabs for answer and file references */}
+     
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-[95vw] max-h-[95vh] flex flex-col w-full h-full sm:max-w-[90vw] sm:max-h-[90vh]">
           <DialogHeader>
@@ -131,7 +76,7 @@ const AskQuestionCard = () => {
                 disabled={saveAnswer.isPending}
                 variant="outline"
                 onClick={() => {
-                  // eslint-disable-next-line @typescript-eslint/no-floating-promises
+                  
                   saveAnswer.mutate(
                     {
                       projectId: project!.id,
@@ -142,6 +87,7 @@ const AskQuestionCard = () => {
                     {
                       onSuccess: () => {
                         toast.success("Answer saved!");
+                        // eslint-disable-next-line @typescript-eslint/no-floating-promises
                        refetch()
                       },
                       onError: () => {

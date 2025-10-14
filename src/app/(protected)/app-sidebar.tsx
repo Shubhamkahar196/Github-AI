@@ -99,15 +99,7 @@ export function AppSidebar() {
               {projects?.map((project) => (
                 <SidebarMenuItem key={project.name}>
                   <SidebarMenuButton asChild>
-                    {/* <Link href={`/project`}>
-                      <div className="rounded-sm border size-6 flex items-center justify-center text-sm bg-primary text-white",
-                      {
-                       'bg-primary text-white': project.id === projectId
-                      }>
-                        {project.name[0]}
-                      </div>
-                      <span>{project.name}</span>
-                    </Link> */}
+                   
 
                     <div onClick={()=>{
                       setProjectId(project.id)
