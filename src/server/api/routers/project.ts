@@ -68,7 +68,11 @@ export const projectRouter = createTRPCRouter({
       projectId: z.string(),
       question: z.string(),
       answer: z.string(),
-      fileReferences: z.any()
+      fileReferences: z.array(z.object({
+        fileName: z.string(),
+        summary: z.string(),
+        sourceCode: z.string()
+      }))
     })).mutation(async({ctx,input}) =>{
       return await ctx.db.question.create({
         data: {

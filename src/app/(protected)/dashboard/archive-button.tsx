@@ -16,15 +16,19 @@ const ArchiveButton = () =>{
     return (
         <Button disabled={archiveProject.isPending} variant='destructive' onClick={()=>{
             const confirm = window.confirm("are you sure you want to archive this project")
-            if(confirm) void archiveProject.mutate({projectId: projectId!},{
-                onSuccess: () =>{
-                    toast.success("project archived")
-                    refetch()
-                },
-                onError: ()=>{
-                    toast.error("failed to archive project")
-                }
-            })
+            if(confirm) {
+  
+                archiveProject.mutate({projectId: projectId!}, {
+                    onSuccess: () => {
+                        toast.success("project archived")
+                        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+                        refetch()
+                    },
+                    onError: () => {
+                        toast.error("failed to archive project")
+                    }
+                })
+            }
         }}>
             Archieve
         </Button>

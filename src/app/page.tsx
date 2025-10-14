@@ -1,15 +1,5 @@
-// import Link from "next/link";
-
-// import { LatestPost } from "@/app/_components/post";
-// import { api, HydrateClient } from "@/trpc/server";
-import { Button } from "@/components/ui/button";
-
+import { redirect } from "next/navigation";
 
 export default async function Home() {
-  return (
-    <div>
-      <h1>Welcome to the Home page</h1>
-      <Button>Click me</Button>
-    </div>
-  );
+  return redirect('/dashboard');
 }

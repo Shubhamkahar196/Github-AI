@@ -5,7 +5,7 @@ import { Geist } from "next/font/google";
 
 import { TRPCReactProvider } from "@/trpc/react";
 import {
-  ClerkProvider 
+  ClerkProvider
 } from '@clerk/nextjs'
 import { Toaster } from "sonner";
 
@@ -24,14 +24,19 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <ClerkProvider>
- <html lang="en" className={`${geist.variable}`}>
-      <body>
-        <TRPCReactProvider>{children}</TRPCReactProvider>
-        <Toaster richColors/>
-      </body>
-    </html>
+    <ClerkProvider
+      appearance={{
+        baseTheme: undefined,
+      }}
+      afterSignInUrl="/sync-user"
+      afterSignUpUrl="/sync-user"
+    >
+      <html lang="en" className={`${geist.variable}`}>
+        <body>
+          <TRPCReactProvider>{children}</TRPCReactProvider>
+          <Toaster richColors />
+        </body>
+      </html>
     </ClerkProvider>
-   
   );
 }
