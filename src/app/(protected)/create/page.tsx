@@ -30,7 +30,7 @@ const CreatePage = () => {
         },{
             onSuccess: ()=>{
                 toast.success('Project created Successfully')
-                // eslint-disable-next-line @typescript-eslint/no-floating-promises
+                // typescript-eslint/no-floating-promises 
                 refetch();
                 reset()
                 

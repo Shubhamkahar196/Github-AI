@@ -10,9 +10,9 @@ import CodeReferences from '../dashboard/code-references';
 
 const QAPage = () => {
   const {projectId} = useProject()
-  const{ data: questions} = api.project.getQuestions.useQuery({projectId}) 
+  const{ data: questions} = api.project.getQuestions.useQuery({projectId: projectId || ''})
 
-  const {questionIndex, setQuestionIndex} = useState(0);
+  const [questionIndex, setQuestionIndex] = useState(0);
   const question = questions?.[questionIndex]
 
   return (
@@ -57,7 +57,7 @@ const QAPage = () => {
         {question.question}
       </SheetTitle>
       <MDEditor.Markdown source={question.answer} />
-      <CodeReferences fileReferences={(question.fileReferences ?? []) as any} />
+      <CodeReferences fileReferences={(question.fileReferences ?? []) as {fileName: string; sourceCode: string; summary: string}[]} />
     </SheetHeader>
   </SheetContent>
 )}

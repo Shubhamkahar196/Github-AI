@@ -1,7 +1,8 @@
 import { AssemblyAI } from "assemblyai";
-import { channel } from "diagnostics_channel";
+// import { channel } from "diagnostics_channel";
+import { env } from "../env";
 
-const client = new AssemblyAI({ apiKey: process.env.ASSEMBLYAI_API_KEY });
+const client = new AssemblyAI({ apiKey: env.ASSEMBLYAI_API_KEY });
 
 function meToTime(ms: number) {
   const seconds = ms / 1000;

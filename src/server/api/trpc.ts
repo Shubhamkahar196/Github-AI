@@ -32,7 +32,7 @@ export const createTRPCContext = async (opts: { headers: Headers }) => {
   };
 };
 
-export type Context = Awaited<ReturnType<typeof createTRPCContext>> & { user: { userId: string } };
+export type Context = Awaited<ReturnType<typeof createTRPCContext>> & { user?: { userId: string } };
 
 /**
  * 2. INITIALIZATION

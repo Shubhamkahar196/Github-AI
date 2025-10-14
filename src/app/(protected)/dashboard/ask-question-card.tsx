@@ -87,7 +87,7 @@ const AskQuestionCard = () => {
                     {
                       onSuccess: () => {
                         toast.success("Answer saved!");
-                        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+                        //  @typescript-eslint/no-floating-promises
                        refetch()
                       },
                       onError: () => {

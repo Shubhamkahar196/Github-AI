@@ -9,7 +9,7 @@ const useProject = () => {
   const [projectId, setProjectId] = useLocalStorage<string | null>('Github-projectId', null)
   React.useEffect(() => {
     if (!projectId && projects && projects.length > 0) {
-      setProjectId(projects![0].id)
+      setProjectId(projects[0]!.id)
     }
   }, [projects, projectId, setProjectId])
   const project = projectId ? projects?.find((p) => p.id === projectId) : undefined

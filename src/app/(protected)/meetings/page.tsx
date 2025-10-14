@@ -75,7 +75,7 @@ const MeetingPage = () => {
                     {
                       onSuccess: () => {
                         toast.success("Meeting deleted successfully");
-                        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+                        //  @typescript-eslint/no-floating-promises
                         refetch();
                       },
                     },

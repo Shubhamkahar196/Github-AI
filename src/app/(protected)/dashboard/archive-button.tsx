@@ -21,7 +21,7 @@ const ArchiveButton = () =>{
                 archiveProject.mutate({projectId: projectId!}, {
                     onSuccess: () => {
                         toast.success("project archived")
-                        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+                        //  @typescript-eslint/no-floating-promises
                         refetch()
                     },
                     onError: () => {

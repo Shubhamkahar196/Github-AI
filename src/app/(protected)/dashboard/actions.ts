@@ -43,7 +43,7 @@ export async function askQuestion(question: string, projectId: string) {
         AND "projectId" = ${projectId}
         ORDER BY similarity DESC
         LIMIT 10
-      ` as { fileName: string; sourceCode: string; summary: string }[]
+      `
 
       console.log("🧩 Similar files found:", result.length)
     } catch (err) {

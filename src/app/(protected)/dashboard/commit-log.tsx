@@ -31,7 +31,7 @@ const CommitLog = () => {
           </div>
 
           <Avatar className="size-8 relative mt-4 flex-none">
-            <AvatarImage src={commit.commitAuthorAvatar || undefined} alt="Avatar" />
+            <AvatarImage src={commit.commitAuthorAvatar ?? undefined} alt="Avatar" />
             <AvatarFallback>{commit.commitAuthorName.charAt(0)}</AvatarFallback>
           </Avatar>
 
@@ -50,7 +50,7 @@ const CommitLog = () => {
             </div>
             <span className="font-semibold">{commit.commitMessage}</span>
             <pre className="mt-2 text-sm leading-6 whitespace-pre-wrap text-gray-500">
-              {commit.summary ? commit.summary : "No summary available"}
+              {commit.summary ?? "No summary available"}
             </pre>
           </div>
         </li>
