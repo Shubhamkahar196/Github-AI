@@ -16,10 +16,10 @@ import TeamMembers from "./team-member";
 const Dashboard = () => {
   const { project } = useProject();
   return (
-    <div>
-      <div className="flex flex-wrap items-center justify-between gap-y-4">
+    <div className="p-4 md:p-6 lg:p-8">
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
         {/* github link */}
-        <div className="bg-primary w-fit rounded-md px-4 py-3">
+        <div className="bg-primary w-full lg:w-fit rounded-md px-4 py-3">
           <div className="flex items-center">
             <Github className="size-6 text-white" />
             <div className="ml-2">
@@ -37,38 +37,27 @@ const Dashboard = () => {
           </div>
         </div>
 
-         <div className="h-4"></div>
-
-         <div className="flex items-center gap-4">
-          {/* Team members
-           */}
-           <TeamMembers/>
+        <div className="flex flex-wrap items-center gap-4">
+          {/* Team members */}
+          <TeamMembers />
           {/* InviteButton */}
-          <InviteButton/>
-          {/* ArchiveButton
-           */}
-           <ArchiveButton/>
-           </div>
-
-
-
-
+          <InviteButton />
+          {/* ArchiveButton */}
+          <ArchiveButton />
+        </div>
       </div>
 
       <div className="mt-4">
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-5">
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-5">
           {/* Ask question card */}
           <AskQuestionCard />
           {/* MeetingCard */}
-          <MeetingCard/>
-
+          <MeetingCard />
         </div>
       </div>
 
       <div className="mt-8">
-        
-
-         <CommitLog/>
+        <CommitLog />
       </div>
     </div>
   );

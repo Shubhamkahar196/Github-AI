@@ -20,7 +20,7 @@ const InviteButton = () => {
   return (
     <>
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent>
+        <DialogContent className="w-full max-w-md mx-auto">
             <DialogHeader>
                 <DialogTitle>
                     Invite Team Members

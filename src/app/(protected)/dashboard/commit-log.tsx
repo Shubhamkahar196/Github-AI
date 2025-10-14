@@ -18,7 +18,7 @@ const CommitLog = () => {
   if (error) console.error("Error fetching commits:", error);
 
   return (
-    <ul className="space-y-6">
+    <ul className="space-y-6 p-4 md:p-6 lg:p-8">
       {commits?.map((commit, idx) => (
         <li key={`${commit.commitHash}-${idx}`} className="relative flex gap-x-4">
           <div

@@ -114,9 +114,9 @@ const AskQuestionCard = () => {
 
       {/* // New improved UI with tabs for answer and file references */}
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-[90vw] max-h-[90vh] flex flex-col sm:max-w-[80vw]">
+        <DialogContent className="max-w-[95vw] max-h-[95vh] flex flex-col w-full h-full sm:max-w-[90vw] sm:max-h-[90vh]">
           <DialogHeader>
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div className="flex items-center gap-2">
                 <Image
                   src="/logo-1.png"
@@ -131,6 +131,7 @@ const AskQuestionCard = () => {
                 disabled={saveAnswer.isPending}
                 variant="outline"
                 onClick={() => {
+                  // eslint-disable-next-line @typescript-eslint/no-floating-promises
                   saveAnswer.mutate(
                     {
                       projectId: project!.id,
@@ -141,7 +142,7 @@ const AskQuestionCard = () => {
                     {
                       onSuccess: () => {
                         toast.success("Answer saved!");
-                       refetch() 
+                       refetch()
                       },
                       onError: () => {
                         toast.error("Failed to save answer!");
@@ -149,7 +150,6 @@ const AskQuestionCard = () => {
                     }
                   );
                 }}
-                className="mr-5"
               >
                 Save Answer
               </Button>
@@ -162,7 +162,7 @@ const AskQuestionCard = () => {
               <TabsTrigger value="references">File References ({fileReferences.length})</TabsTrigger>
             </TabsList>
             <TabsContent value="answer" className="flex-1 mt-4">
-              <ScrollArea className="h-[60vh] w-full rounded-md border p-4">
+              <ScrollArea className="h-[50vh] sm:h-[60vh] w-full rounded-md border p-4">
                 <MDEditor.Markdown
                   source={answer}
                   className="!bg-transparent !text-foreground"
@@ -170,7 +170,7 @@ const AskQuestionCard = () => {
               </ScrollArea>
             </TabsContent>
             <TabsContent value="references" className="flex-1 mt-4">
-              <ScrollArea className="h-[60vh] w-full rounded-md border p-4">
+              <ScrollArea className="h-[50vh] sm:h-[60vh] w-full rounded-md border p-4">
                 <CodeReferences fileReferences={fileReferences} />
               </ScrollArea>
             </TabsContent>

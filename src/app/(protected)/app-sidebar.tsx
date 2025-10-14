@@ -53,8 +53,8 @@ export function AppSidebar() {
   const { open } = useSidebar();
   const {projects,projectId,setProjectId} = useProject();
   return (
- 
-    <Sidebar collapsible="icon" variant="floating">
+
+    <Sidebar collapsible="icon" variant="floating" className="md:block">
       <SidebarHeader>
         {/*logo  */}
         <div className="flex items-center gap-2">

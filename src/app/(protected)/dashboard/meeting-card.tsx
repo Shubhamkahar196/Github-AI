@@ -64,7 +64,7 @@ const MeetingCard = () => {
 
 
   return (
-    <Card className='col-span-2 flex flex-col items-center justify-center p-10' {...getRootProps()}>
+    <Card className='col-span-2 flex flex-col items-center justify-center p-4 md:p-6 lg:p-10' {...getRootProps()}>
         { !isUploading && (
                 <>
                 <Presentation  className='h-10 w-10 animate-bounce'/>
@@ -84,7 +84,7 @@ const MeetingCard = () => {
                    </Button>
                 </div>
                 </>
-            )} 
+            )}
             {isUploading && (
                     <div>
                         <CircularProgressbar value={progress} text= {`${progress}%`} className='size-20' styles={
@@ -96,7 +96,7 @@ const MeetingCard = () => {
                         <p className='text-sm text-gray-500 text-center'>Uploading your meeting</p>
                     </div>
             )}
-            
+
 
     </Card>
   )
