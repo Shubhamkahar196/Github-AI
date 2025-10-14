@@ -39,7 +39,7 @@ An AI-powered GitHub repository enhancement platform that provides intelligent c
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/your-username/github-ai.git
+   git clone https://github.com/Shubhamkahar196/Github-AI
    cd github-ai
    ```
 
@@ -75,7 +75,7 @@ An AI-powered GitHub repository enhancement platform that provides intelligent c
    npm run dev
    ```
 
-6. **Open [http://localhost:3000](http://localhost:3000) in your browser**
+6. **Open [http://localhost:3000] in your browser**
 
 ## 📖 Usage
 
@@ -137,7 +137,7 @@ src/
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License - see the LICENSE file for details.
 
 ## 🙏 Acknowledgments
 
@@ -151,8 +151,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📞 Support
 
-For support, email support@github-ai.com or join our Discord community.
+For support, email shubhamkahar196@gmail.com 
 
 ---
 
-**Live Demo**: [https://github-ai.vercel.app](https://github-ai.vercel.app)
+**Live Demo**: 
